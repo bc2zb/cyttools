@@ -11,7 +11,7 @@ cyttools.R [--cluster=<algorithm>] DIR
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
 --version       Show the current version.
---cluster=<algorithm>    [default: FlowSOM] The algorithm to use for clustering.
+--cluster=<algorithm>    [default: FlowType] The algorithm to use for clustering.
 
 Arguements:
 
@@ -32,8 +32,11 @@ if(args$`--version` == T){
 }else if(args$`--cluster` %in% algList == F){ # checks that algorithm is available
   cat(paste(c("\nERROR:","\nCurrent algorithms for clustering are:", algList), collapse = "\n"), "\n")  
 
-# ADD CHECK FOR EXISTANCE OF FCS FILES PRINT NUMBER OF FCS FILES IN DIRECTORY
 }else{ # Analysis begins
   
   cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n", sep = ""))
 }
+
+dir.create(file.path(getwd(), "cyttoolsResults"), showWarnings = FALSE)
+argsFileName <- paste(file.path(getwd(), "cyttoolsResults"), "/", Sys.time(), "_", "cyttools.args", ".Rdata", sep = "")
+save(args, file = argsFileName)
