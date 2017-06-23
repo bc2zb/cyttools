@@ -7,8 +7,7 @@ require(methods)
 Usage:
 cyttools.R [--number=<number>] [--min=<min>] [--max=<max>]
 cyttools.R (-h | --help | --version)
-cyttools.R DIR
-cyttools.R --cluster=<algorithm>
+cyttools.R --cluster=<algorithm> DIR
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
@@ -30,13 +29,16 @@ algList <- c("FlowSOM", "FlowType")
 # returns version if version is requested
 if(args$`--version` == T){
   cat("Version is pre alpha\n")
+
 }else if(is.null(args$DIR)){ # checks for directory provided
-  cat("\nERROR: Please provide a directory or file\n")
-  
+  cat("\nERROR:\nPlease provide a directory or file\n")
+
+}else if(args$`--cluster` %in% algList == F){ # checks that algorithm is available
+  cat(paste(c("\nERROR:","\nCurrent algorithms for clustering are:", algList), collapse = "\n"), "\n")  
+
 }else if(args$`--cluster` %in% algList){
   cat(paste("\nPreparing to run analysis using ", args$`--cluster`, "\n", sep = ""))
-}else if(args$`--cluster` %in% algList == F){
-  cat(paste(c("\nCurrent algorithms for clustering are:", algList), collapse = "\n"), "\n")  
+
 }else{
   cat(paste("\nRunning analysis on ", args$DIR, "\n", sep = ""))
 }
