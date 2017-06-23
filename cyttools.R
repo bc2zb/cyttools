@@ -5,16 +5,12 @@ require(methods)
 
 "
 Usage:
-cyttools.R [--number=<number>] [--min=<min>] [--max=<max>]
 cyttools.R (-h | --help | --version)
-cyttools.R --cluster=<algorithm> DIR
+cyttools.R [--cluster=<algorithm>] DIR
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
 --version       Show the current version.
---number=<num>  [default: 1] The number of random numbers to generate.
---min=<min>     [default: 0] The lowest value a random number can have.
---max=<max>     [default: 1] The highest value a random number can have.
 --cluster=<algorithm>    [default: FlowSOM] The algorithm to use for clustering.
 
 Arguements:
@@ -28,7 +24,7 @@ algList <- c("FlowSOM", "FlowType")
 
 # returns version if version is requested
 if(args$`--version` == T){
-  cat("Version is pre alpha\n")
+  cat("\nVersion is pre alpha\n")
 
 }else if(is.null(args$DIR)){ # checks for directory provided
   cat("\nERROR:\nPlease provide a directory or file\n")
@@ -36,9 +32,8 @@ if(args$`--version` == T){
 }else if(args$`--cluster` %in% algList == F){ # checks that algorithm is available
   cat(paste(c("\nERROR:","\nCurrent algorithms for clustering are:", algList), collapse = "\n"), "\n")  
 
-}else if(args$`--cluster` %in% algList){
-  cat(paste("\nPreparing to run analysis using ", args$`--cluster`, "\n", sep = ""))
-
-}else{
-  cat(paste("\nRunning analysis on ", args$DIR, "\n", sep = ""))
+# ADD CHECK FOR EXISTANCE OF FCS FILES PRINT NUMBER OF FCS FILES IN DIRECTORY
+}else{ # Analysis begins
+  
+  cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n", sep = ""))
 }
