@@ -6,6 +6,7 @@ library(flowType)
 # library(RchyOptimyx)
 # library(Deducer)
 
+# Eventually ask for directory
 dir <- "~/BTSync/FLOW_CORE/ERICKSON_CYTOF_B_CELL_ALLERGY_CYTOF_DATA/"
 file <- list.files(dir ,pattern='.fcs$', full=TRUE)
 fileToSampleID <- read.delim("~/BTSync/FLOW_CORE/ERICKSON_DATA/FileNameToSampleIDTable.txt")
