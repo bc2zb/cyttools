@@ -19,14 +19,14 @@ DIR    Provide directory for files to be analyzed.
 " -> doc
 
 
-args    <- docopt(doc)
+args <- docopt(doc)
 algList <- c("FlowSOM", "FlowType")
 
-# returns version if version is requested
-if(args$`--version` == T){
+
+if(args$`--version` == T){ # returns version if version is requested
   cat("\nVersion is pre alpha\n")
 
-}else if(is.null(args$DIR)){ # checks for directory provided
+}else if(is.null(args$DIR)){ # checks for directory provided TBD: Change to check for FCS files in the directory
   cat("\nERROR:\nPlease provide a directory or file\n")
 
 }else if(args$`--cluster` %in% algList == F){ # checks that algorithm is available
@@ -35,7 +35,15 @@ if(args$`--version` == T){
 }else{ # Analysis begins
   
   cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n", sep = ""))
+  
+  if(args$`--cluster` == "FlowType"){
+    source("FlowType.R")
+  }else{
+    cat(paste(c("\nWARNING:","\nAlgorithm not found:", args$`--cluster`), collapse = "\n"), "\n")  
+    }
 }
+
+# create new sub directory for each instance of cyttools
 
 dir.create(file.path(getwd(), "cyttoolsResults"), showWarnings = FALSE)
 argsFileName <- paste(file.path(getwd(), "cyttoolsResults"), "/", Sys.time(), "_", "cyttools.args", ".Rdata", sep = "")
