@@ -13,7 +13,7 @@ Options:
 --version       Show the current version.
 --cluster=<algorithm>    [default: FlowType] The algorithm to use for clustering.
 
-Arguements:
+Arguments:
 
 DIR    Provide directory for files to be analyzed.
 " -> doc
