@@ -38,16 +38,8 @@ flowSet <- read.flowSet(file) # reads in files as flowSet, required for flowType
 targets <- cbind(colnames(flowSet), unlist(parameters(flowSet[[1]])$name), unlist(parameters(flowSet[[1]])$desc))
 # force user to pass in file
 channelIndex <- intersect(grep("_", targets[,3]), grep("DNA|Viability|Event", targets[,3], invert = T))
-<<<<<<< HEAD
 EpitopesListOfInterest <- targets[channelIndex,2]
 parEstCoef <- mclapply(EpitopesListOfInterest, function(x){try(estParamFlowVS(flowSet, x))},
-
-=======
-
-parEstCoef <- mclapply(channelIndex, function(x){estCoef <- try(estParamFlowVS(flowSet, targets[x,2]))
-                                                 return(estCoef)
-                                                     },
->>>>>>> a8b11d83dd7578a0ec120813ac29f30b0d8e16a4
                        mc.cores = 7)
 
 flowTypeTargets <- data.frame(PropMarkers = targets[,3],
