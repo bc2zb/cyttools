@@ -22,5 +22,28 @@ args <- docopt(doc)
 
 RESULTS_DIR <- args$DIR
 
-load(paste(RESULTS_DIR, "cyttools.args.Rdata", sep = ""))
 cat("\nLoading arguments from", args$DIR, "\n")
+
+load(paste(RESULTS_DIR, "cyttools.args.Rdata", sep = ""))
+
+library(flowType)
+library(flowCore)
+library(parallel)
+library(flowVS)
+
+dir <- args$DIR # grabs directory from initial cyttools call
+file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
+flowSet <- read.flowSet(file) # reads in files as flowSet, required for flowType
+
+targets <- cbind(colnames(flowSet), unlist(parameters(flowSet[[1]])$name), unlist(parameters(flowSet[[1]])$desc))
+# force user to pass in file
+channelIndex <- intersect(grep("_", targets[,3]), grep("DNA|Viability|Event", targets[,3], invert = T))
+EpitopesListOfInterest <- targets[channelIndex,2]
+parEstCoef <- mclapply(EpitopesListOfInterest, function(x){try(estParamFlowVS(flowSet, x))},
+
+                       mc.cores = 7)
+
+flowTypeTargets <- data.frame(PropMarkers = targets[,3],
+                              MFIMarkers = targets[,3],
+                              MarkerNames = targets[,3]
+)
