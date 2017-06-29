@@ -44,6 +44,7 @@ if(args$`--version` == T){ # returns version if version is requested
   cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n", sep = ""))
   
   if(args$`--cluster` == "FlowType"){
+
     COMMAND <- paste("Rscript Flowtype.R", RESULTS_DIR)
     #COMMAND <- "Rscript Flowtype.R -h"
     system(command = COMMAND)
