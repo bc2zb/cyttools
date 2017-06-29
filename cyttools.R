@@ -41,12 +41,11 @@ if(args$`--version` == T){ # returns version if version is requested
   argsFileName <- paste(RESULTS_DIR, "cyttools.args", ".Rdata", sep = "")
   save(args, file = argsFileName)
   
-  cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n", sep = ""))
+  cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
   
   if(args$`--cluster` == "FlowType"){
 
     COMMAND <- paste("Rscript Flowtype.R", RESULTS_DIR)
-    #COMMAND <- "Rscript Flowtype.R -h"
     system(command = COMMAND)
   }else{
     cat(paste(c("\nWARNING:","\nAlgorithm not found:", args$`--cluster`), collapse = "\n"), "\n")  
