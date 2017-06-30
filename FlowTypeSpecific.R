@@ -1,25 +1,6 @@
 library(flowType)
 
 # Eventually ask for directory
-# dir <- "~/BTSync/FLOW_CORE/ERICKSON_CYTOF_B_CELL_ALLERGY_CYTOF_DATA/"
-# file <- list.files(dir ,pattern='.fcs$', full=TRUE)
-# fileToSampleID <- read.delim("~/BTSync/FLOW_CORE/ERICKSON_DATA/FileNameToSampleIDTable.txt")
-# 
-# LABELS <- data.frame(x = gsub("^.*\\/\\/", "", file),
-#                      fileName = file)
-# 
-# LABELS <- base::merge(LABELS, fileToSampleID, by.x = 1, by.y = 1)
-# LABELS$Group <- colsplit(LABELS$sample.ID, "\ ", c("Group", "Uselss"))[,1]
-# 
-# gsub("^.*\\/\\/", "", file) %in% fileToSampleID$x
-# flowSet <- read.flowSet(file)
-# 
-# targets <- cbind(colnames(flowSet), unlist(parameters(flowSet[[1]])$name), unlist(parameters(flowSet[[1]])$desc))
-# 
-# flowTypeTargets <- data.frame(PropMarkers = targets[,3],
-#                               MFIMarkers = targets[,3],
-#                               MarkerNames = targets[,3]
-#                               )
 # 
 # 
 # flowTypeTargets$MarkerNames <- gsub("\\ \\(v\\)", "", flowTypeTargets$MarkerNames)
