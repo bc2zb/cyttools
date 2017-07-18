@@ -1,11 +1,37 @@
+#!/usr/bin/env Rscript
+
+require(docopt)
+require(methods)
+
+"
+Usage:
+NonRedundancyScoreComputation.R (-h | --help | --version)
+NonRedundancyScoreComputation.R DIR PANEL
+
+Description:   This script is a template for making docopts compatible Rscripts
+Options:
+--version       Show the current version.
+
+Arguments:
+
+DIR    Provide directory
+" -> doc
+
+
+args <- docopt(doc)
+
+RESULTS_DIR <- args$DIR
+
+cat("\nLoading arguments from", args$DIR, "\n")
+
+load(paste(RESULTS_DIR, "cyttools.args.Rdata", sep = ""))
+
 library(flowCore)
 library(cytofCore)
 library(flowVS)
 library(flowType)
 library(tidyverse)
 library(reshape2)
-source("~/BTSync/MethylationGeneExpressionProfilePaper/SCRIPTS/expressionSetFunctions.R")
-
 
 dir <- args$DIR # grabs directory from initial cyttools call
 file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
@@ -16,18 +42,11 @@ targets <- read.delim(args$PANEL)
 lineage_markers <- targets$name[targets$Lineage == 1]
 functional_markers <- targets$name[targets$Functional == 1]
 
-flowSet.trans <- transFlowVS(flowSet, 
+flowSet.trans <- transFlowVS(flowSet,
                              as.character(targets$name[which(targets$Lineage == 1 |
                                                                targets$Functional == 1)]),
                              rep(5, length(targets$name[which(targets$Lineage == 1 |
                                                                 targets$Functional == 1)])))
-
-
-# force user to pass in file WHITEBOARD!
-# targets <- pData(parameters(flowSet[[1]]))
-# write.table(targets, file = "~/BTSync/FLOW_CORE/LOUGHRAN/DATA/panel.txt", quote = F, row.names = F, sep = "\t")
-
-
 
 ## Define a function that calculates the NRS per sample
 NRS <- function(x, ncomp = 3){
@@ -47,27 +66,21 @@ lineage_markers_ord <- names(sort(nrs, decreasing = TRUE))
 nrs_sample <- data.frame(nrs_sample)
 nrs_sample$sample_id <- rownames(nrs_sample)
 
-# make metadata, should be submitted with job
+nrs_all <- rep(NA, nrow(targets))
+for(i in 1:length(nrs_all)){
+  if(length(which(names(nrs) == targets$name[i])) == 0)
+    nrs_all[i] <- NA
+  else{
+    nrs_all[i] <- nrs[which(names(nrs) == targets$name[i])]
+  }
+}
 
-md <- unique(ggdf$sample_id) %>% 
-  colsplit(.,
-           pattern = "\ ",
-           names = c("Sample", "Condition"))
-md$FileName <- unique(ggdf$sample_id)
-md$Condition <- gsub("\\.fcs", "", md$Condition)
-md$Condition[c(22:25)] <- rep(md$Condition[5], 4)
+targets$NRS <- nrs_all
 
-ggdf <- melt(nrs_sample, id.var = "sample_id",
-             value.name = "nrs", variable.name = "antigen")
+nrsFile <- paste(RESULTS_DIR, "nrsPanelFile.txt", sep = "")
 
-ggdf$antigen <- factor(ggdf$antigen, levels = lineage_markers_ord)
-ggdf$condition <- recoderFunc(ggdf$sample_id, md$FileName, md$Condition)
-ggdf$condition <- factor(ggdf$condition, levels = c("Norm", "WT", "Y640F", "D661Y", "NK"))
+write.table(targets, file = nrsFile, sep = "\t", quote = F, row.names = F)
 
-ggplot(ggdf, aes(x = antigen, y = nrs)) +
-  geom_point(aes(color = condition), alpha = 0.9,
-             position = position_jitter(width = 0.3, height = 0)) +
-  geom_boxplot(outlier.color = NA, fill = NA) +
-  stat_summary(fun.y = "mean", geom = "point", shape = 21, fill = "white") +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+workspaceFile <- paste(RESULTS_DIR, "NonRedundancyScoreComputationWorkspace.Rdata", sep = "")
+
+save.image(file = workspaceFile)

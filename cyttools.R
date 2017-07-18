@@ -8,16 +8,18 @@ Usage:
 cyttools.R (-h | --help | --version)
 cyttools.R [--cluster=<algorithm>] DIR
 cyttools.R --makePanelBlank DIR
-
+cyttools.R --computeNRS DIR PANEL
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
 --version       Show the current version.
 --cluster=<algorithm>    [default: FlowType] The algorithm to use for clustering.
---makePanelBlank     Produce a panel file based on FCS files in DIR
+--makePanelBlank         Produce a panel design file based on FCS files in DIR
+--computeNRS             Compute non redundancy score for parameters
 
 Arguments:
 
 DIR    Provide directory for files to be analyzed.
+PANEL  Provide a panel design file, use --makePanelBlank to generate and edit as needed
 " -> doc
 
 
@@ -45,6 +47,10 @@ if(args$`--version` == T){ # returns version if version is requested
   if(args$`--makePanelBlank` == T){
     
     COMMAND <- paste("Rscript MakePanelBlank.R", RESULTS_DIR)
+    system(command = COMMAND)
+  }else if(args$`--computeNRS` == T){
+    
+    COMMAND <- paste("Rscript NonRedundancyScoreComputation.R", RESULTS_DIR, paste("'", args$PANEL, "'", sep = ""))
     system(command = COMMAND)
   }else if(args$`--cluster` == "FlowType"){
     
