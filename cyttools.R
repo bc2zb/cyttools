@@ -7,13 +7,13 @@ require(methods)
 Usage:
 cyttools.R (-h | --help | --version)
 cyttools.R [--cluster=<algorithm>] DIR
-cyttools.R (-g | --generatePanelBlank) DIR
+cyttools.R --makePanelBlank DIR
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
 --version       Show the current version.
 --cluster=<algorithm>    [default: FlowType] The algorithm to use for clustering.
---generatePanelBlank     Produce a panel file based on FCS files in DIR
+--makePanelBlank     Produce a panel file based on FCS files in DIR
 
 Arguments:
 
@@ -42,7 +42,7 @@ if(args$`--version` == T){ # returns version if version is requested
   argsFileName <- paste(RESULTS_DIR, "cyttools.args", ".Rdata", sep = "")
   save(args, file = argsFileName)
   
-  if(args$`--generatePanelBlank` == T){
+  if(args$`--makePanelBlank` == T){
     
     COMMAND <- paste("Rscript MakePanelBlank.R", RESULTS_DIR)
     system(command = COMMAND)

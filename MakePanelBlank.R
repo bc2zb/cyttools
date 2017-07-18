@@ -33,8 +33,21 @@ library(flowType)
 library(tidyverse)
 library(reshape2)
 
+panelColnames <- c("name", "desc", "range", "minRange", "maxRange", "Ignore", "Lineage", "Functional", "Barcode", "Viability", "EventDiscrimination", "EQBEADS")
+
 dir <- args$DIR # grabs directory from initial cyttools call
 file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
 flowSet <- read.flowSet(file, transformation = F) # reads in files as flowSet, required for flowType
 
-save.image(file = "~/BTSync/FLOW_CORE/cyttools/MakePanelBlank.Rdata")
+panel <- as.data.frame(pData(parameters(flowSet[[1]])))
+panelBlank <- panel
+
+for ( i in c((ncol(panel)+1):length(panelColnames))){
+  panelBlank <- cbind(panelBlank, rep(0, nrow(panelBlank)))
+}
+
+colnames(panelBlank) <- panelColnames
+
+panelFile <- paste(RESULTS_DIR, "panelFile.txt", sep = "")
+
+write.table(panelBlank, file = panelFile, sep = "\t", quote = F, row.names = F)
