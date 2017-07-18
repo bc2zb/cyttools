@@ -7,11 +7,13 @@ require(methods)
 Usage:
 cyttools.R (-h | --help | --version)
 cyttools.R [--cluster=<algorithm>] DIR
+cyttools.R (-g | --generatePanelBlank) DIR
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
 --version       Show the current version.
 --cluster=<algorithm>    [default: FlowType] The algorithm to use for clustering.
+--generatePanelBlank     Produce a panel file based on FCS files in DIR
 
 Arguments:
 
@@ -25,7 +27,6 @@ algList <- c("FlowSOM", "FlowType")
 
 if(args$`--version` == T){ # returns version if version is requested
   cat("\nVersion is pre alpha\n")
-
 }else if(is.null(args$DIR)){ # checks for directory provided TBD: Change to check for FCS files in the directory
   cat("\nERROR:\nPlease provide a directory or file\n")
 
@@ -41,10 +42,13 @@ if(args$`--version` == T){ # returns version if version is requested
   argsFileName <- paste(RESULTS_DIR, "cyttools.args", ".Rdata", sep = "")
   save(args, file = argsFileName)
   
-  cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
-  
-  if(args$`--cluster` == "FlowType"){
-
+  if(args$`--generatePanelBlank` == T){
+    
+    COMMAND <- paste("Rscript MakePanelBlank.R", RESULTS_DIR)
+    system(command = COMMAND)
+  }else if(args$`--cluster` == "FlowType"){
+    
+    cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
     COMMAND <- paste("Rscript Flowtype.R", RESULTS_DIR)
     system(command = COMMAND)
   }else{
