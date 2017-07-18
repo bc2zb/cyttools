@@ -40,15 +40,27 @@ flowSet <- read.flowSet(file, transformation = F) # reads in files as flowSet, r
 
 targets <- read.delim(args$PANEL)
 
+# if NRS column is missing from the panel, calculate NRS
+if(length(grep("NRS", colnames(targets))) == 0){
+  
+  COMMAND <- paste("Rscript NonRedundancyScoreComputation.R", RESULTS_DIR, paste("'", args$PANEL, "'", sep = ""))
+  system(command = COMMAND)
+  targets <- read.delim(paste(RESULTS_DIR, "nrsPanelFile.txt", sep = ""))
+}
+
 lineage_markers <- targets$name[targets$Lineage == 1]
 functional_markers <- targets$name[targets$Functional == 1]
 
-flowSet.trans <- transFlowVS(flowSet, 
+flowSet.trans <- transFlowVS(flowSet,
                              as.character(targets$name[which(targets$Lineage == 1 |
                                                                targets$Functional == 1)]),
                              rep(5, length(targets$name[which(targets$Lineage == 1 |
                                                                 targets$Functional == 1)])))
 
+
+lineage_markers_ord <- targets$name
+lineage_markers_ord <- lineage_markers_ord[lineage_markers_ord %in% targets$name[which(targets$Ignore == 0)]]
+lineage_markers_ord <- lineage_markers_ord[order(targets$NRS[which(targets$name %in% lineage_markers_ord)], decreasing = T)]
 
 ResList <- flowType(flowSet.trans[[1]],
                     PropMarkers = lineage_markers_ord[1:12],
@@ -58,7 +70,7 @@ ResList <- flowType(flowSet.trans[[1]],
 
 
 
-fsApply(flowSet.trans, 'flowType', 
+fsApply(flowSet.trans, 'flowType',
         PropMarkers = lineage_markers,
         MFIMarkers = lineage_markers,
         MarkerNames = targets$desc[which(targets$Lineage == 1)],
@@ -67,3 +79,7 @@ fsApply(flowSet.trans, 'flowType',
 
 
 
+
+workspaceFile <- paste(RESULTS_DIR, "FlowTypeWorkspace.Rdata", sep = "")
+
+save.image(file = workspaceFile)
