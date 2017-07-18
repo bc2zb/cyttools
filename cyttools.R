@@ -50,11 +50,8 @@ if(args$`--version` == T){ # returns version if version is requested
     system(command = COMMAND)
   }else if(args$`--computeNRS` == T){
     
-<<<<<<< HEAD
     COMMAND <- paste("Rscript NonRedundancyScoreComputation.R", RESULTS_DIR, paste("'", args$PANEL, "'", sep = ""))
-=======
-    COMMAND <- paste("Rscript NonRedundancyScoreComputation.R", RESULTS_DIR, args$PANEL)
->>>>>>> 3c9b63f67afda251dc92d9f8b7cdef2bf893db24
+
     system(command = COMMAND)
   }else if(args$`--cluster` == "FlowType"){
     
