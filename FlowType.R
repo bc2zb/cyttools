@@ -58,27 +58,17 @@ flowSet.trans <- transFlowVS(flowSet,
                                                                 targets$Functional == 1)])))
 
 
+# order the markers using NRS, dropping markers set to "1" in Ignore column of panel design
 lineage_markers_ord <- targets$name
 lineage_markers_ord <- lineage_markers_ord[lineage_markers_ord %in% targets$name[which(targets$Ignore == 0)]]
 lineage_markers_ord <- lineage_markers_ord[order(targets$NRS[which(targets$name %in% lineage_markers_ord)], decreasing = T)]
 
-ResList <- flowType(flowSet.trans[[1]],
-                    PropMarkers = lineage_markers_ord[1:12],
-                    MFIMarkers = lineage_markers_ord[1:12],
-                    MarkerNames = targets$desc[targets$name %in% lineage_markers_ord[1:12]],
-                    MemLimit = 15)
-
-
-
-fsApply(flowSet.trans, 'flowType',
-        PropMarkers = lineage_markers,
-        MFIMarkers = lineage_markers,
-        MarkerNames = targets$desc[which(targets$Lineage == 1)],
-        MaxMarkersPerPop = 14,
-        MemLimit = 15)
-
-
-
+ResList <- fsApply(flowSet.trans,
+                   'flowType',
+                   PropMarkers = lineage_markers_ord[1:12],
+                   MFIMarkers = lineage_markers_ord[1:12],
+                   MarkerNames = targets$desc[targets$name %in% lineage_markers_ord[1:12]],
+                   MemLimit = 15)
 
 workspaceFile <- paste(RESULTS_DIR, "FlowTypeWorkspace.Rdata", sep = "")
 
