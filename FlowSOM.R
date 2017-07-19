@@ -69,13 +69,20 @@ fsom <- ReadInput(flowSet.trans, transform = FALSE, scale = FALSE)
 set.seed(1234)
 som <- BuildSOM(fsom, colsToUse = lineage_markers)
 
+<<<<<<< HEAD
 flowSOM.res <- BuildMST(som)
 
+=======
+>>>>>>> 91b8cf22b5766b480641195ee7e49791f59eab8f
 library(ConsensusClusterPlus)
 
 codes <- som$map$codes
 plot_outdir <- "consensus_plots"
+<<<<<<< HEAD
 nmc <- 100
+=======
+nmc <- 20
+>>>>>>> 91b8cf22b5766b480641195ee7e49791f59eab8f
 
 mc <- ConsensusClusterPlus(t(codes), maxK = nmc, reps = 100,
                            pItem = 0.9, pFeature = 1, title = plot_outdir, plot = "png",
