@@ -25,3 +25,7 @@ RESULTS_DIR <- args$DIR
 cat("\nLoading arguments from", args$DIR, "\n")
 
 load(paste(RESULTS_DIR, "cyttools.args.Rdata", sep = ""))
+
+workspaceFile <- paste(RESULTS_DIR, "TemplateWorkspace.Rdata", sep = "")
+
+save.image(file = workspaceFile)
