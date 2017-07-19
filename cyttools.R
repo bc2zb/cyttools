@@ -9,6 +9,7 @@ cyttools.R (-h | --help | --version)
 cyttools.R [--cluster=<algorithm>] DIR PANEL
 cyttools.R --makePanelBlank DIR
 cyttools.R --computeNRS DIR PANEL
+
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
 --version       Show the current version.
@@ -53,6 +54,11 @@ if(args$`--version` == T){ # returns version if version is requested
     COMMAND <- paste("Rscript NonRedundancyScoreComputation.R", RESULTS_DIR, paste("'", args$PANEL, "'", sep = ""))
 
     system(command = COMMAND)
+  }else if(args$`--cluster` == "FlowSOM"){
+    
+    cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
+    COMMAND <- paste("Rscript FlowSOM.R", RESULTS_DIR, paste("'", args$PANEL, "'", sep = ""))
+    system(command = COMMAND)    
   }else if(args$`--cluster` == "FlowType"){
     
     cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
