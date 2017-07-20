@@ -67,25 +67,14 @@ lineage_markers_ord <- lineage_markers_ord[order(targets$NRS[which(targets$name 
 
 fsom <- ReadInput(flowSet.trans, transform = FALSE, scale = FALSE)
 set.seed(1234)
-som <- BuildSOM(fsom, colsToUse = lineage_markers)
+som <- BuildSOM(fsom,
+                colsToUse = lineage_markers[lineage_markers %in% targets$name[targets$Ignore == 0]],
+                xdim = length(lineage_markers[lineage_markers %in% targets$name[targets$Ignore == 0]]),
+                ydim = length(lineage_markers[lineage_markers %in% targets$name[targets$Ignore == 0]]))
 
 flowSOM.res <- BuildMST(som)
 
-library(ConsensusClusterPlus)
 
-codes <- som$map$codes
-plot_outdir <- "consensus_plots"
-nmc <- 100
-nmc <- 20
-
-mc <- ConsensusClusterPlus(t(codes), maxK = nmc, reps = 100,
-                           pItem = 0.9, pFeature = 1, title = plot_outdir, plot = "png",
-                           clusterAlg = "hc", innerLinkage = "average", finalLinkage = "average",
-                           distance = "euclidean", seed = 1234)
-
-## Get cluster ids for each cell
-code_clustering1 <- mc[[nmc]]$consensusClass
-cell_clustering1 <- code_clustering1[som$map$mapping[,1]]
 
 workspaceFile <- paste(RESULTS_DIR, "FlowSOMWorkspace.Rdata", sep = "")
 
