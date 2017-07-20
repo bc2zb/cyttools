@@ -74,7 +74,20 @@ som <- BuildSOM(fsom,
 
 flowSOM.res <- BuildMST(som)
 
+ResultsTable <- as.data.frame(flowSOM.res$data)
+fileLabels <- flowSOM.res$metaData %>% unlist() %>% matrix(ncol = 2, byrow = T)
+fileNames <- vector(length = nrow(ResultsTable))
+for(i in 1:nrow(fileLabels)){
+  fileNames[fileLabels[i,1]:fileLabels[i,2]] <- file[i]
+}
 
+ResultsTable$FileNames <- fileNames
+ResultsTable$Mapping <- flowSOM.res$map$mapping[,1]
+ResultsTable$DistToNode <- flowSOM.res$map$mapping[,2]
+
+ResultsTableFile <- paste(RESULTS_DIR, "FlowSOMResultsTable.txt", sep = "")
+
+write.table(ResultsTable, ResultsTableFile, sep = "\t", quote = F, row.names = F)
 
 workspaceFile <- paste(RESULTS_DIR, "FlowSOMWorkspace.Rdata", sep = "")
 
