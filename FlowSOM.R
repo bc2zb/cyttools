@@ -75,6 +75,8 @@ som <- BuildSOM(fsom,
                 xdim = length(colsToUse),
                 ydim = length(colsToUse))
 
+som$prettyColnames <- targets$desc
+
 flowSOM.res <- BuildMST(som)
 
 ResultsTable <- as.data.frame(flowSOM.res$data)
