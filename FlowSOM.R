@@ -67,10 +67,13 @@ lineage_markers_ord <- lineage_markers_ord[order(targets$NRS[which(targets$name 
 
 fsom <- ReadInput(flowSet.trans, transform = FALSE, scale = FALSE)
 set.seed(1234)
+
+colsToUse <- which(targets$name %in% lineage_markers[lineage_markers %in% targets$name[targets$Ignore == 0]] == T)
+
 som <- BuildSOM(fsom,
-                colsToUse = lineage_markers[lineage_markers %in% targets$name[targets$Ignore == 0]],
-                xdim = length(lineage_markers[lineage_markers %in% targets$name[targets$Ignore == 0]]),
-                ydim = length(lineage_markers[lineage_markers %in% targets$name[targets$Ignore == 0]]))
+                colsToUse = colsToUse,
+                xdim = length(colsToUse),
+                ydim = length(colsToUse))
 
 flowSOM.res <- BuildMST(som)
 
