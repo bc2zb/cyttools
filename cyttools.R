@@ -10,7 +10,7 @@ cyttools.R --makePanelBlank DIR
 cyttools.R --makeMetaDataBlank DIR
 cyttools.R --computeNRS DIR PANEL
 cyttools.R [--cluster=<algorithm>] DIR PANEL
-cyttools.R --compDiffAbndnc DIR FEATURETABLE METADATA
+cyttools.R --compDiffAbndnc PANEL FEATURETABLE METADATA
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
@@ -37,8 +37,6 @@ algList <- c("FlowSOM", "FlowType")
 
 if(args$`--version` == T){ # returns version if version is requested
   cat("\nVersion is pre alpha\n")
-}else if(is.null(args$DIR)){ # checks for directory provided TBD: Change to check for FCS files in the directory
-  cat("\nERROR:\nPlease provide a directory or file\n")
 
 }else if(args$`--cluster` %in% algList == F){ # checks that algorithm is available
   cat(paste(c("\nERROR:","\nCurrent algorithms for clustering are:", algList), collapse = "\n"), "\n")  
@@ -69,6 +67,7 @@ if(args$`--version` == T){ # returns version if version is requested
     
     COMMAND <- paste("Rscript compDiffAbndnc.R",
                      RESULTS_DIR,
+                     paste("'", args$PANEL, "'", sep = ""),
                      paste("'", args$FEATURETABLE, "'", sep = ""),
                      paste("'", args$METADATA, "'", sep = ""))
     
