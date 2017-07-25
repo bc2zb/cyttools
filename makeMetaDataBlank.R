@@ -41,4 +41,4 @@ md <- data.frame(FileName = md$FileName,
       
 mdFile <- paste(RESULTS_DIR, "MetaDataFile.txt", sep = "")
 
-write.table(mdBlank, file = panelFile, sep = "\t", quote = F, row.names = F)
+write.table(md, file = mdFile, sep = "\t", quote = F, row.names = F)
