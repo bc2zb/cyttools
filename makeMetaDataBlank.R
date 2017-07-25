@@ -8,13 +8,13 @@ Usage:
 makeMetaDataBlank.R (-h | --help | --version)
 makeMetaDataBlank.R DIR
 
-Description:   This script is a template for making docopts compatible Rscripts
+Description:   This script is makes meta data table blanks for use with cyttools.
 Options:
 --version       Show the current version.
 
 Arguments:
 
-DIR    Provide directory
+DIR    Provide directory where fcs files are located
 " -> doc
 
 
@@ -26,18 +26,19 @@ cat("\nLoading arguments from", args$DIR, "\n")
 
 load(paste(RESULTS_DIR, "cyttools.args.Rdata", sep = ""))
 
+library(tidyverse)
 
 # USER SHOULD BE PASSING THIS IN AS A SEPARATE FILE
-md <- data.frame(FileName = colnames(countTable))
-md$FileName <- gsub("/Volumes/som-fccf/FC_McNamaraCA/McSkimming/170602 Capaldo HK exp stim cells fcs files/Myeloid export//", "", md$FileName)
-md <- separate(md,
-               FileName,
-               into = c("Subset", "TimePoint", "Condition", "SampleID"),
-               sep = "\ ",
-               remove = F
-)
-md$SampleID <- gsub("\\.fcs", "", md$SampleID)
+dir <- args$DIR # grabs directory from initial cyttools call
+file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
 
-workspaceFile <- paste(RESULTS_DIR, "makeMetaDataBlankWorkspace.Rdata", sep = "")
+md <- data.frame(FileName = gsub(paste(args$DIR, "/", sep = "|"), "", file))
+md <- data.frame(FileName = md$FileName,
+                 SampleID = vector(length = length(md$FileName)),
+                 Group = vector(length = length(md$FileName)),
+                 Condition = vector(length = length(md$FileName)),
+                 TimePoint = vector(length = length(md$FileName)))
+      
+mdFile <- paste(RESULTS_DIR, "MetaDataFile.txt", sep = "")
 
-save.image(file = workspaceFile)
+write.table(mdBlank, file = panelFile, sep = "\t", quote = F, row.names = F)
