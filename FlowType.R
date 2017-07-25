@@ -62,12 +62,17 @@ flowSet.trans <- transFlowVS(flowSet,
 lineage_markers_ord <- targets$name
 lineage_markers_ord <- lineage_markers_ord[lineage_markers_ord %in% targets$name[which(targets$Ignore == 0)]]
 lineage_markers_ord <- lineage_markers_ord[order(targets$NRS[which(targets$name %in% lineage_markers_ord)], decreasing = T)]
+if(length(lineage_markers_ord) > 12){
+  lineage_markers_ord <- lineage_markers_ord[1:12]
+}
+
+colsToUse <- which(targets$name %in% lineage_markers_ord == T)
 
 ResList <- fsApply(flowSet.trans,
                    'flowType',
-                   PropMarkers = lineage_markers_ord[1:12],
-                   MFIMarkers = lineage_markers_ord[1:12],
-                   MarkerNames = targets$desc[targets$name %in% lineage_markers_ord[1:12]],
+                   PropMarkers = colsToUse,
+                   MFIMarkers = colsToUse,
+                   MarkerNames = targets$desc[colsToUse],
                    MemLimit = 15)
 
 workspaceFile <- paste(RESULTS_DIR, "FlowTypeWorkspace.Rdata", sep = "")
