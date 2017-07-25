@@ -6,21 +6,28 @@ require(methods)
 "
 Usage:
 cyttools.R (-h | --help | --version)
-cyttools.R [--cluster=<algorithm>] DIR PANEL
 cyttools.R --makePanelBlank DIR
+cyttools.R --makeMetaDataBlank DIR
 cyttools.R --computeNRS DIR PANEL
+cyttools.R [--cluster=<algorithm>] DIR PANEL
+cyttools.R --compDiffAbndnc DIR FEATURETABLE METADATA
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
 --version       Show the current version.
---cluster=<algorithm>    [default: FlowType] The algorithm to use for clustering.
 --makePanelBlank         Produce a panel design file based on FCS files in DIR
+--makeMetaDataBlank      Produce a meta data file based on FCS files in DIR
 --computeNRS             Compute non redundancy score for parameters
+--cluster=<algorithm>    [default: FlowType] The algorithm to use for clustering.
+--compDiffAbndnc         Test for differential abundance
 
 Arguments:
 
-DIR    Provide directory for files to be analyzed.
-PANEL  Provide a panel design file, use --makePanelBlank to generate and edit as needed
+DIR           Provide directory for files to be analyzed
+PANEL         Provide a panel design file, use --makePanelBlank to generate and edit as needed
+METADATA      Provide a meta data file, use --makeMetaDataBlank to generate and edit as needed
+FEATURETABLE  Provide a expression matrix of events with subpopulation assignments
+
 " -> doc
 
 
@@ -49,10 +56,22 @@ if(args$`--version` == T){ # returns version if version is requested
     
     COMMAND <- paste("Rscript MakePanelBlank.R", RESULTS_DIR)
     system(command = COMMAND)
+  }else if(args$`--makeMetaDataBlank` == T){
+    
+    COMMAND <- paste("Rscript makeMetaDataBlank.R", RESULTS_DIR)
+    system(command = COMMAND)
   }else if(args$`--computeNRS` == T){
     
     COMMAND <- paste("Rscript NonRedundancyScoreComputation.R", RESULTS_DIR, paste("'", args$PANEL, "'", sep = ""))
 
+    system(command = COMMAND)
+  }else if(args$`--compDiffAbndnc` == T){
+    
+    COMMAND <- paste("Rscript compDiffAbndnc.R",
+                     RESULTS_DIR,
+                     paste("'", args$FEATURETABLE, "'", sep = ""),
+                     paste("'", args$METADATA, "'", sep = ""))
+    
     system(command = COMMAND)
   }else if(args$`--cluster` == "FlowSOM"){
     
