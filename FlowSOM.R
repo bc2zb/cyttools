@@ -94,19 +94,20 @@ ResultsTableFile <- paste(RESULTS_DIR, "FlowSOMResultsTable.txt", sep = "")
 
 write.table(ResultsTable, ResultsTableFile, sep = "\t", quote = F, row.names = F)
 
-exprTable <- melt(resultsTable,
-                  measure.vars = colnames(resultsTable)[colnames(resultsTable) %in% panelDesign$name[panelDesign$Ignore == 0] == T],
-                  id.vars = colnames(resultsTable)[colnames(resultsTable) %in% panelDesign$name == F],
+panelDesign <- targets
+
+nodeExprTable <- melt(ResultsTable,
+                  measure.vars = colnames(ResultsTable)[colnames(ResultsTable) %in% panelDesign$name[panelDesign$Ignore == 0] == T],
+                  id.vars = colnames(ResultsTable)[colnames(ResultsTable) %in% panelDesign$name == F],
                   variable.name = "Metal",
                   value.name = "Intensity"
-)
-nodeExprTable <- acast(exprTable,
-                       Mapping + Metal ~ FileNames,
-                       fun.aggregate = median,
-                       value.var = "Intensity"
+) %>% acast(.,
+            Mapping + Metal ~ FileNames,
+            fun.aggregate = median,
+            value.var = "Intensity"
 )
 
-countTable <- resultsTable[,grep("Mapping|FileNames", colnames(resultsTable))]
+countTable <- ResultsTable[,grep("Mapping|FileNames", colnames(ResultsTable))]
 countTable <- table(countTable$Mapping, countTable$FileNames)
 
 props_table <- t(t(countTable) / colSums(countTable))
