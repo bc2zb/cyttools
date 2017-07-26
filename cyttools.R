@@ -64,13 +64,15 @@ if(args$`--version` == T){ # returns version if version is requested
     system(command = COMMAND)
   }else if(args$`--computeNRS` == T){
     
-    COMMAND <- paste("Rscript NonRedundancyScoreComputation.R", RESULTS_DIR, paste("'", args$PANEL, "'", sep = ""))
+    COMMAND <- paste("Rscript NonRedundancyScoreComputation.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""),
+                     paste("'", args$PANEL, "'", sep = ""))
 
     system(command = COMMAND)
   }else if(args$`--compDiffAbndnc` == T){
     
     COMMAND <- paste("Rscript compDiffAbndnc.R",
-                     RESULTS_DIR,
+                     paste("'", RESULTS_DIR, "'", sep = ""),
                      paste("'", args$PANEL, "'", sep = ""),
                      paste("'", args$FEATURETABLE, "'", sep = ""),
                      paste("'", args$METADATA, "'", sep = ""))
@@ -79,7 +81,7 @@ if(args$`--version` == T){ # returns version if version is requested
   }else if(args$`--compDiffExpr` == T){
     
     COMMAND <- paste("Rscript compDiffExpr.R",
-                     RESULTS_DIR,
+                     paste("'", RESULTS_DIR, "'", sep = ""),
                      paste("'", args$PANEL, "'", sep = ""),
                      paste("'", args$FEATURETABLE, "'", sep = ""),
                      paste("'", args$METADATA, "'", sep = ""))
@@ -88,12 +90,16 @@ if(args$`--version` == T){ # returns version if version is requested
   }else if(args$`--cluster` == "FlowSOM"){
     
     cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
-    COMMAND <- paste("Rscript FlowSOM.R", RESULTS_DIR, paste("'", args$PANEL, "'", sep = ""))
+    COMMAND <- paste("Rscript FlowSOM.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""),
+                     paste("'", args$PANEL, "'", sep = ""))
     system(command = COMMAND)    
   }else if(args$`--cluster` == "FlowType"){
     
     cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
-    COMMAND <- paste("Rscript Flowtype.R", RESULTS_DIR, paste("'", args$PANEL, "'", sep = ""))
+    COMMAND <- paste("Rscript Flowtype.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""),
+                     paste("'", args$PANEL, "'", sep = ""))
     system(command = COMMAND)
   }else{
     cat(paste(c("\nWARNING:","\nAlgorithm not found:", args$`--cluster`), collapse = "\n"), "\n")  
