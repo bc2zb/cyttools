@@ -75,6 +75,68 @@ ResList <- fsApply(flowSet.trans,
                    MarkerNames = targets$desc[colsToUse],
                    MemLimit = 15)
 
+panelDesign <- targets
+
+phenotype.names=unlist(lapply(ResList[[1]]@PhenoCodes,function(x){
+  return(decodePhenotype(x,
+                         as.character(targets$desc[colsToUse]),
+                         ResList[[1]]@PartitionsPerMarker))}))
+names(ResList[[1]]@PhenoCodes)=phenotype.names
+
+nodeExprTable <- lapply(ResList, function(x){return(apply(x@Partitions, 1, paste, collapse =""))})
+
+allExprData <- fsApply(flowSet.trans, function(x){return(x)}, use.exprs = T)
+
+nodeMappings <- unlist(nodeExprTable) %>% data.frame(CellId = names(.), Mapping = .)
+
+nodeExprTable <- cbind(allExprData, nodeMappings)
+
+nodeExprTable$NodeNames <- recoderFunc(nodeExprTable$Mapping,
+                                       ResList[[1]]@PhenoCodes,
+                                       names(ResList[[1]]@PhenoCodes))
+
+nodeExprTable$FileNames <- gsub(".fcs[0-9]*", ".fcs", nodeExprTable$CellId)
+subPopsExprTable <- matrix(ncol = length(ResList))
+for ( i in 1:length(ResList[[1]]@PhenoCodes)){
+  subPopCode <- gsub("0", ".", ResList[[1]]@PhenoCodes[i])
+  subPopData <- nodeExprTable[grep(subPopCode, nodeExprTable$Mapping),]
+  subPopExprTable <- melt(subPopData,
+                          measure.vars = colnames(subPopData)[colnames(subPopData) %in% panelDesign$name[panelDesign$Ignore == 0] == T],
+                          id.vars = colnames(subPopData)[colnames(subPopData) %in% panelDesign$name == F],
+                          variable.name = "Metal",
+                          value.name = "Intensity"
+  )
+  subPopExprTable$Mapping <- rep(gsub("\\.", "0", subPopCode), nrow(subPopExprTable))
+  subPopNodeExprTable <- acast(subPopExprTable,
+                               Mapping + Metal ~ FileNames,
+                               fun.aggregate = median,
+                               value.var = "Intensity" 
+  )
+  subPopsExprTable <- rbind(subPopsExprTable, subPopNodeExprTable)
+}
+
+nodeExprTableFile <- paste(RESULTS_DIR, "nodeExpressionFeatureTable.txt", sep = "")
+
+write.table(subPopsExprTable, nodeExprTableFile, sep = "\t", quote = F, row.names = T)
+
+all.proportions <- matrix(0,length(ResList[[1]]@CellFreqs),length(ResList))
+for (i in 1:length(ResList))
+  all.proportions[,i] = ResList[[i]]@CellFreqs / ResList[[i]]@CellFreqs[1]
+
+colnames(all.proportions) <- names(ResList)
+row.names(all.proportions) <- phenotype.names
+
+nodeAbndncFeatureTableFile <- paste(RESULTS_DIR, "nodeAbundanceFeatureTable.txt", sep = "")
+
+write.table(all.proportions, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = T)
+
+PhenoCodes <- data.frame(PhenoCodes = ResList[[1]]@PhenoCodes,
+                         Names = names(ResList[[1]]@PhenoCodes))
+
+PhenoCodesFile <- paste(RESULTS_DIR, "PhenoCodes.txt", sep = "")
+
+write.table(PhenoCodes, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = F)
+
 workspaceFile <- paste(RESULTS_DIR, "FlowTypeWorkspace.Rdata", sep = "")
 
 save.image(file = workspaceFile)

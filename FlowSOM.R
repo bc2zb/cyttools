@@ -113,11 +113,11 @@ props_table <- t(t(countTable) / colSums(countTable))
 
 nodeExprTableFile <- paste(RESULTS_DIR, "nodeExpressionFeatureTable.txt", sep = "")
 
-write.table(nodeExprTable, nodeExprTableFile, sep = "\t", quote = F, row.names = F)
+write.table(nodeExprTable, nodeExprTableFile, sep = "\t", quote = F, row.names = T)
 
 nodeAbndncFeatureTableFile <- paste(RESULTS_DIR, "nodeAbundanceFeatureTable.txt", sep = "")
 
-write.table(props_table, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = F)
+write.table(props_table, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = T)
 
 workspaceFile <- paste(RESULTS_DIR, "FlowSOMWorkspace.Rdata", sep = "")
 
