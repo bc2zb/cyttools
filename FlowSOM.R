@@ -42,14 +42,6 @@ flowSet <- read.flowSet(file, transformation = F) # reads in files as flowSet, r
 
 targets <- read.delim(args$PANEL)
 
-# if NRS column is missing from the panel, calculate NRS
-if(length(grep("NRS", colnames(targets))) == 0){
-  
-  COMMAND <- paste("Rscript NonRedundancyScoreComputation.R", RESULTS_DIR, paste("'", args$PANEL, "'", sep = ""))
-  system(command = COMMAND)
-  targets <- read.delim(paste(RESULTS_DIR, "nrsPanelFile.txt", sep = ""))
-}
-
 lineage_markers <- targets$name[targets$Lineage == 1]
 functional_markers <- targets$name[targets$Functional == 1]
 
