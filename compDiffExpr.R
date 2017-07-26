@@ -5,8 +5,8 @@ require(methods)
 
 "
 Usage:
-compDiffAbndnc.R (-h | --help | --version)
-compDiffAbndnc.R DIR PANEL FEATURETABLE METADATA
+compDiffExpr.R (-h | --help | --version)
+compDiffExpr.R DIR PANEL FEATURETABLE METADATA
 
 Description:   This script calculates differential abundance using a feature table
 Options:
@@ -16,7 +16,7 @@ Arguments:
 
 DIR             Provide directory
 PANEL           Provide a panel design file
-FEATURETABLE    Provide feature table file
+FEATURETABLE    Provide expression feature table file
 METADATA        Provide meta data file
 " -> doc
 
@@ -36,9 +36,7 @@ library(reshape2)
 logitTransform <- function(p) { log(p/(1-p)) }
 panelDesign <- read.delim(args$PANEL)
 md <- read.delim(args$METADATA)
-props_Table <- read.delim(args$FEATURETABLE)
-
-propData <- logitTransform(props_table)
+nodeExprTable <- read.delim(args$FEATURETABLE)
 
 targets <- md
 
@@ -52,8 +50,6 @@ design <- model.matrix(~ 0 + exprDesign + targets$SampleID + targets$Group)
 
 colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
 colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
-
-fit <- lmFit(propData, design = design)
 
 # Automate generation of contrast matrix
 cont.matrix <- matrix(nrow = length(colnames(design)), ncol = (length(colnames(design)) - 1)*(length(colnames(design)))/2) # levels X Contrasts
@@ -112,21 +108,27 @@ colnames(cont.matrix) <- humanReadableColNames[validContrastIndex]
 
 cont.matrix <- cont.matrix[,grep("BatchEffect", colnames(cont.matrix), invert = T)]
 
+fit <- lmFit(nodeExprTable, design = design)
+
 fit2 <- contrasts.fit(fit, cont.matrix)
 fit2 <- eBayes(fit2)
 
-diffAbndncStatsTable <- data.frame()
+diffExprStatsTable <- data.frame()
 
 for ( i in 1:length(colnames(fit2))){
   nextPart <- topTable(fit2, coef = i, number = Inf)
   nextPart$Source <- rep(colnames(fit2)[i], nrow(nextPart))
-  nextPart$Mapping <- row.names(nextPart)
-  diffAbndncStatsTable <- rbind(diffAbndncStatsTable, nextPart)
+  nextPart$RowNames <- row.names(nextPart)
+  nextPart <- separate(nextPart,
+                       RowNames,
+                       c("Mapping", "Metal"),
+                       "_")
+  diffExprStatsTable <- rbind(diffExprStatsTable, nextPart)
 }
 
-nodeAbndncStatsFile <- paste(RESULTS_DIR, "nodeDifferentialAbundanceTable.txt", sep = "")
+nodeExprStatsFile <- paste(RESULTS_DIR, "nodeDifferentialExpressionTable.txt", sep = "")
 
-write.table(diffExprStatsTable, nodeAbndncStatsFile, sep = "\t", quote = F, row.names = F)
+write.table(diffExprStatsTable, nodeExprStatsFile, sep = "\t", quote = F, row.names = F)
 
 workspaceFile <- paste(RESULTS_DIR, "compDiffAbndncWorkspace.Rdata", sep = "")
 

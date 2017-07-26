@@ -11,6 +11,7 @@ cyttools.R --makeMetaDataBlank DIR
 cyttools.R --computeNRS DIR PANEL
 cyttools.R [--cluster=<algorithm>] DIR PANEL
 cyttools.R --compDiffAbndnc PANEL FEATURETABLE METADATA
+cyttools.R --compDiffExpr PANEL FEATURETABLE METADATA
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
@@ -20,13 +21,14 @@ Options:
 --computeNRS             Compute non redundancy score for parameters
 --cluster=<algorithm>    [default: FlowType] The algorithm to use for clustering.
 --compDiffAbndnc         Test for differential abundance
+--compDiffExpr         Test for differential expression
 
 Arguments:
 
 DIR           Provide directory for files to be analyzed
 PANEL         Provide a panel design file, use --makePanelBlank to generate and edit as needed
 METADATA      Provide a meta data file, use --makeMetaDataBlank to generate and edit as needed
-FEATURETABLE  Provide a expression matrix of events with subpopulation assignments
+FEATURETABLE  Provide a expression or abundance feature table, these are outputs of --cluster command
 
 " -> doc
 
@@ -66,6 +68,15 @@ if(args$`--version` == T){ # returns version if version is requested
   }else if(args$`--compDiffAbndnc` == T){
     
     COMMAND <- paste("Rscript compDiffAbndnc.R",
+                     RESULTS_DIR,
+                     paste("'", args$PANEL, "'", sep = ""),
+                     paste("'", args$FEATURETABLE, "'", sep = ""),
+                     paste("'", args$METADATA, "'", sep = ""))
+    
+    system(command = COMMAND)
+  }else if(args$`--compDiffExpr` == T){
+    
+    COMMAND <- paste("Rscript compDiffExpr.R",
                      RESULTS_DIR,
                      paste("'", args$PANEL, "'", sep = ""),
                      paste("'", args$FEATURETABLE, "'", sep = ""),

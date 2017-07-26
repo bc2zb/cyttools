@@ -94,6 +94,31 @@ ResultsTableFile <- paste(RESULTS_DIR, "FlowSOMResultsTable.txt", sep = "")
 
 write.table(ResultsTable, ResultsTableFile, sep = "\t", quote = F, row.names = F)
 
+exprTable <- melt(resultsTable,
+                  measure.vars = colnames(resultsTable)[colnames(resultsTable) %in% panelDesign$name[panelDesign$Ignore == 0] == T],
+                  id.vars = colnames(resultsTable)[colnames(resultsTable) %in% panelDesign$name == F],
+                  variable.name = "Metal",
+                  value.name = "Intensity"
+)
+nodeExprTable <- acast(exprTable,
+                       Mapping + Metal ~ FileNames,
+                       fun.aggregate = median,
+                       value.var = "Intensity"
+)
+
+countTable <- resultsTable[,grep("Mapping|FileNames", colnames(resultsTable))]
+countTable <- table(countTable$Mapping, countTable$FileNames)
+
+props_table <- t(t(countTable) / colSums(countTable))
+
+nodeExprTableFile <- paste(RESULTS_DIR, "nodeExpressionFeatureTable.txt", sep = "")
+
+write.table(nodeExprTable, nodeExprTableFile, sep = "\t", quote = F, row.names = F)
+
+nodeAbndncFeatureTableFile <- paste(RESULTS_DIR, "nodeAbundanceFeatureTable.txt", sep = "")
+
+write.table(props_table, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = F)
+
 workspaceFile <- paste(RESULTS_DIR, "FlowSOMWorkspace.Rdata", sep = "")
 
 save.image(file = workspaceFile)
