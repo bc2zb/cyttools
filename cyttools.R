@@ -59,8 +59,8 @@ if(args$`--version` == T){ # returns version if version is requested
     system(command = COMMAND)
   }else if(args$`--makeMetaDataBlank` == T){
     
-    paste("Rscript MakePanelBlank.R",
-          paste("'", RESULTS_DIR, "'", sep = ""))
+    COMMAND <- paste("Rscript MakePanelBlank.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""))
     system(command = COMMAND)
   }else if(args$`--computeNRS` == T){
     
