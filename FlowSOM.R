@@ -51,6 +51,12 @@ flowSet.trans <- transFlowVS(flowSet,
                              rep(5, length(targets$name[which(targets$Lineage == 1 |
                                                                 targets$Functional == 1)])))
 
+if(length(grep("NRS", colnames(targets))) == 0){
+  
+  COMMAND <- paste("Rscript NonRedundancyScoreComputation.R", RESULTS_DIR, paste("'", args$PANEL, "'", sep = ""))
+  system(command = COMMAND)
+  targets <- read.delim(paste(RESULTS_DIR, "nrsPanelFile.txt", sep = ""))
+}
 
 # order the markers using NRS, dropping markers set to "1" in Ignore column of panel design
 lineage_markers_ord <- targets$name
