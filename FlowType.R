@@ -96,6 +96,11 @@ nodeExprTable$NodeNames <- recoderFunc(nodeExprTable$Mapping,
                                        names(ResList[[1]]@PhenoCodes))
 
 nodeExprTable$FileNames <- gsub(".fcs[0-9]*", ".fcs", nodeExprTable$CellId)
+
+ResultsTableFile <- paste(RESULTS_DIR, "FlowTypeResultsTable.txt", sep = "")
+
+write.table(nodeExprTable, ResultsTableFile, sep = "\t", quote = F, row.names = T)
+
 subPopsExprTable <- matrix(ncol = length(ResList))
 for ( i in 1:length(ResList[[1]]@PhenoCodes)){
   subPopCode <- gsub("0", ".", ResList[[1]]@PhenoCodes[i])
