@@ -99,7 +99,7 @@ nodeExprTable$FileNames <- gsub(".fcs[0-9]*", ".fcs", nodeExprTable$CellId)
 
 ResultsTableFile <- paste(RESULTS_DIR, "FlowTypeResultsTable.txt", sep = "")
 
-write.table(nodeExprTable, ResultsTableFile, sep = "\t", quote = F, row.names = T)
+write.table(nodeExprTable, ResultsTableFile, sep = "\t", quote = F, row.names = F)
 
 subPopsExprTable <- matrix(ncol = length(ResList))
 for ( i in 1:length(ResList[[1]]@PhenoCodes)){
