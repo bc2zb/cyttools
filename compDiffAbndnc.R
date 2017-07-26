@@ -36,7 +36,7 @@ library(reshape2)
 logitTransform <- function(p) { log(p/(1-p)) }
 panelDesign <- read.delim(args$PANEL)
 md <- read.delim(args$METADATA)
-props_Table <- read.delim(args$FEATURETABLE)
+props_Table <- read.delim(args$FEATURETABLE, row.names = 1)
 
 propData <- logitTransform(props_table)
 

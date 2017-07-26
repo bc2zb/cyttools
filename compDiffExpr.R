@@ -36,7 +36,7 @@ library(reshape2)
 logitTransform <- function(p) { log(p/(1-p)) }
 panelDesign <- read.delim(args$PANEL)
 md <- read.delim(args$METADATA)
-nodeExprTable <- read.delim(args$FEATURETABLE)
+nodeExprTable <- read.delim(args$FEATURETABLE, row.names = 1)
 
 targets <- md
 
