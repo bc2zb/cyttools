@@ -2,12 +2,12 @@
 
 # Fill in the varibles below with the locations of your various files
 
-CYTTOOLS_LOCATION='/PATH/TO/CYTTOOLS/DIRECTORY/'
-FCS_DIR='/PATH/TO/FCS/FILES/
-PANEL='/PATH/TO/PANEL/FILE.TXT'
-METADATA='/PATH/TO/METADATA/FILE.TXT'
-RESULTS_CLUSTERING='/PATH/TO/CLUSTERING/RESULTS/DIRECTORY/'
-RESULTS_DIFFERENTIAL='/PATH/TO/DIFFERENTIAL/RESULTS/DIRECTORY/'
+CYTTOOLS_LOCATION="/PATH/TO/CYTTOOLS/DIRECTORY/""
+FCS_DIR="/PATH/TO/FCS/FILES/"
+PANEL="/PATH/TO/PANEL/FILE.TXT"
+METADATA="/PATH/TO/METADATA/FILE.TXT"
+RESULTS_CLUSTERING="/PATH/TO/CLUSTERING/RESULTS/DIRECTORY/"
+RESULTS_DIFFERENTIAL="/PATH/TO/DIFFERENTIAL/RESULTS/DIRECTORY/"
 
 cd $CYTTOOLS_LOCATION
 
@@ -18,7 +18,7 @@ cd $CYTTOOLS_LOCATION
 
 # perfrom clustering analysis, WARNING FlowType takes a long time to run and will eat up most of your memory
 
-Rscript cyttools.R --cluster=FlowSOM "$FCD_DIR" "$PANEL"
+Rscript cyttools.R --cluster=FlowSOM "$FCS_DIR" "$PANEL"
 
 # move clustering results directory from cyttoolsResults to your experiment location, this script will automatically create the directory, you should not make it beforehand
 
