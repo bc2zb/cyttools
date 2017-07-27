@@ -34,7 +34,7 @@ FEATURETABLE  Provide a expression or abundance feature table, these are outputs
 
 
 args <- docopt(doc)
-algList <- c("FlowSOM", "FlowType")
+algList <- c("FlowSOM", "FlowType", "ParFlowType")
 
 
 if(args$`--version` == T){ # returns version if version is requested
@@ -98,6 +98,13 @@ if(args$`--version` == T){ # returns version if version is requested
     
     cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
     COMMAND <- paste("Rscript Flowtype.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""),
+                     paste("'", args$PANEL, "'", sep = ""))
+    system(command = COMMAND)
+  }else if(args$`--cluster` == "ParFlowType"){
+    
+    cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
+    COMMAND <- paste("Rscript ParFlowtype.R",
                      paste("'", RESULTS_DIR, "'", sep = ""),
                      paste("'", args$PANEL, "'", sep = ""))
     system(command = COMMAND)

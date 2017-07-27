@@ -52,15 +52,29 @@ colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
 colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
 
 fit <- lmFit(nodeExprTable, design = design)
-if(length(is.na(fit@.Data[[3]])) == length(fit@.Data[[3]])){
-  design <- model.matrix(~ 0 + exprDesign)
+numUnEst <- rowSums(is.na(fit$coefficients)) 
+numUnEst <- sum(numUnEst > 0 & numUnEst < NCOL(fit$coefficients))
+if(numUnEst == nrow(nodeExprTable)){
+  design <- model.matrix(~ 0 + exprDesign + targets$SampleID)
   
   colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
   colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
   
   fit <- lmFit(nodeExprTable, design = design)
+  numUnEst <- rowSums(is.na(fit$coefficients)) 
+  numUnEst <- sum(numUnEst > 0 & numUnEst < NCOL(fit$coefficients))
   
-  cat("\n\nWARNING: Limma cannot estimate random effects due to sample size, using simplified model for analysis\n\n")
+  if(numUnEst == nrow(nodeExprTable)){
+    design <- model.matrix(~ 0 + exprDesign)
+    
+    colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
+    colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
+    
+    fit <- lmFit(nodeExprTable, design = design)
+    
+    cat("\n\nWARNING: Limma cannot estimate random effects due to sample size, using simplified model for analysis\n\n")
+  }else{
+    cat("\n\nWARNING: Limma cannot estimate group effects due to sample size, using simplified model for analysis\n\n")}
 }
 
 # Automate generation of contrast matrix
