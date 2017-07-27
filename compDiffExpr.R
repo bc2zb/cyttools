@@ -141,6 +141,6 @@ nodeExprStatsFile <- paste(RESULTS_DIR, "nodeDifferentialExpressionTable.txt", s
 
 write.table(diffExprStatsTable, nodeExprStatsFile, sep = "\t", quote = F, row.names = F)
 
-workspaceFile <- paste(RESULTS_DIR, "compDiffAbndncWorkspace.Rdata", sep = "")
+workspaceFile <- paste(RESULTS_DIR, "compDiffExprWorkspace.Rdata", sep = "")
 
 save.image(file = workspaceFile)
