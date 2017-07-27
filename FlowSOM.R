@@ -58,6 +58,14 @@ if(length(grep("NRS", colnames(targets))) == 0){
   targets <- read.delim(paste(RESULTS_DIR, "nrsPanelFile.txt", sep = ""))
 }
 
+if(length(grep("Ignore", colnames(targets))) == 0){
+  
+  targets$Ignore <- c(targets$Lineage == 0 & targets$Functional == 0)
+  targets$Ignore[targets$Ignore == T] <- 1
+}
+
+
+
 # order the markers using NRS, dropping markers set to "1" in Ignore column of panel design
 lineage_markers_ord <- targets$name
 lineage_markers_ord <- lineage_markers_ord[lineage_markers_ord %in% targets$name[which(targets$Ignore == 0)]]
