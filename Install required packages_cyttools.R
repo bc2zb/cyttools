@@ -21,6 +21,6 @@ if ( length(missing_packages) > 0 ) {
 	cat(sprintf('FOLLOWING PACKAGES NEED TO BE INSTALLED STILL:\n\t%s\n',
 		paste(missing_packages, collapse=', ')))
 } else{
-	cat('ALL PACKAGES ARE INSTALLED, ATTEMPTING TO CLONE cyttools\n')
+	cat('ALL PACKAGES ARE INSTALLED, cyttools should work')
 }
 
