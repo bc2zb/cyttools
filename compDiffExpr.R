@@ -51,6 +51,18 @@ design <- model.matrix(~ 0 + exprDesign + targets$SampleID + targets$Group)
 colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
 colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
 
+fit <- lmFit(nodeExprTable, design = design)
+if(length(is.na(fit@.Data[[3]])) == length(fit@.Data[[3]])){
+  design <- model.matrix(~ 0 + exprDesign)
+  
+  colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
+  colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
+  
+  fit <- lmFit(nodeExprTable, design = design)
+  
+  cat("\n\nWARNING: Limma cannot estimate random effects due to sample size, using simplified model for analysis\n\n")
+}
+
 # Automate generation of contrast matrix
 cont.matrix <- matrix(nrow = length(colnames(design)), ncol = (length(colnames(design)) - 1)*(length(colnames(design)))/2) # levels X Contrasts
 prevNumContrasts <- 1
@@ -108,7 +120,6 @@ colnames(cont.matrix) <- humanReadableColNames[validContrastIndex]
 
 cont.matrix <- cont.matrix[,grep("BatchEffect", colnames(cont.matrix), invert = T)]
 
-fit <- lmFit(nodeExprTable, design = design)
 
 fit2 <- contrasts.fit(fit, cont.matrix)
 fit2 <- eBayes(fit2)

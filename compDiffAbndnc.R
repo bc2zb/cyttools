@@ -54,6 +54,16 @@ colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
 colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
 
 fit <- lmFit(propData, design = design)
+if(length(is.na(fit@.Data[[3]])) == length(fit@.Data[[3]])){
+  design <- model.matrix(~ 0 + exprDesign)
+  
+  colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
+  colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
+  
+  fit <- lmFit(propData, design = design)
+  
+  cat("\n\nWARNING: Limma cannot estimate random effects due to sample size, using simplified model for analysis\n\n")
+}
 
 # Automate generation of contrast matrix
 cont.matrix <- matrix(nrow = length(colnames(design)), ncol = (length(colnames(design)) - 1)*(length(colnames(design)))/2) # levels X Contrasts
@@ -126,7 +136,7 @@ for ( i in 1:length(colnames(fit2))){
 
 nodeAbndncStatsFile <- paste(RESULTS_DIR, "nodeDifferentialAbundanceTable.txt", sep = "")
 
-write.table(diffExprStatsTable, nodeAbndncStatsFile, sep = "\t", quote = F, row.names = F)
+write.table(diffAbndncStatsTable, nodeAbndncStatsFile, sep = "\t", quote = F, row.names = F)
 
 workspaceFile <- paste(RESULTS_DIR, "compDiffAbndncWorkspace.Rdata", sep = "")
 
