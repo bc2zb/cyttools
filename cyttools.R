@@ -36,7 +36,9 @@ FEATURETABLE  Provide a expression or abundance feature table, these are outputs
 
 
 args <- docopt(doc)
-algList <- c("FlowSOM", "FlowType", "ParFlowType")
+algList <- c("FlowSOM",
+             "FlowType", "ParFlowType",
+             "BatchFlowTypeDataPrep", "BatchFlowType", "BatchFlowTypeDataMerge")
 
 
 if(args$`--version` == T){ # returns version if version is requested
@@ -94,6 +96,24 @@ if(args$`--version` == T){ # returns version if version is requested
     
     cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
     COMMAND <- paste("Rscript ParFlowtype.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""))
+    system(command = COMMAND)
+  }else if(args$`--cluster` == "BatchFlowType"){
+    
+    cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
+    COMMAND <- paste("Rscript BatchFlowtype.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""))
+    system(command = COMMAND)
+  }else if(args$`--cluster` == "BatchFlowTypeDataPrep"){
+    
+    cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
+    COMMAND <- paste("Rscript BatchFlowTypeDataPrep.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""))
+    system(command = COMMAND)
+  }else if(args$`--cluster` == "BatchFlowTypeDataMerge"){
+    
+    cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
+    COMMAND <- paste("Rscript BatchFlowTypeDataMerge.R",
                      paste("'", RESULTS_DIR, "'", sep = ""))
     system(command = COMMAND)
   }else{
