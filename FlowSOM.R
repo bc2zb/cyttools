@@ -14,7 +14,7 @@ Options:
 
 Arguments:
 
-DIR    Provide directory
+DIR    Provide directory for cytools.args.Rdata to be found
 
 " -> doc
 
@@ -30,8 +30,6 @@ load(paste(ARGS_DIR, "cyttools.args.Rdata", sep = ""))
 RESULTS_DIR <- args$OUT
 
 source("cyttoolsFunctions.R")
-
-file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
 
 targets <- read.delim(args$PANEL)
 colsToCheck <- c("Ignore", "TransformCofactor", "Lineage", "Functional", "NRS")

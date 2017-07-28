@@ -29,9 +29,6 @@ RESULTS_DIR <- args$OUT
 
 source("cyttoolsFunctions.R")
 
-dir <- args$DIR # grabs directory from initial cyttools call
-file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
-
 targets <- read.delim(args$PANEL)
 colsToCheck <- c("Ignore", "TransformCofactor", "Lineage", "Functional", "NRS")
 if(checkDesignCols(targets, colsToCheck)){
@@ -45,6 +42,9 @@ if(checkDesignCols(targets, colsToCheck)){
 
 lineage_markers <- targets$name[targets$Lineage == 1]
 functional_markers <- targets$name[targets$Functional == 1]
+
+dir <- args$DIR # grabs directory from initial cyttools call
+file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
 
 if(args$transform == T){
   flowSet.trans <- read.flowSet.transVS(targets, file)
