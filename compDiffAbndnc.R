@@ -6,7 +6,7 @@ require(methods)
 "
 Usage:
 compDiffAbndnc.R (-h | --help | --version)
-compDiffAbndnc.R DIR PANEL FEATURETABLE METADATA
+compDiffAbndnc.R DIR
 
 Description:   This script calculates differential abundance using a feature table
 Options:
@@ -14,33 +14,34 @@ Options:
 
 Arguments:
 
-DIR             Provide directory
-PANEL           Provide a panel design file
-FEATURETABLE    Provide feature table file
-METADATA        Provide meta data file
+DIR    Provide directory where cyttools.args.Rdata file is located
+
 " -> doc
 
 
 args <- docopt(doc)
 
-RESULTS_DIR <- args$DIR
+ARGS_DIR <- args$DIR
 
-cat("\nLoading arguments from", args$DIR, "\n")
+cat("\nLoading arguments from", ARGS_DIR, "\n")
 
-load(paste(RESULTS_DIR, "cyttools.args.Rdata", sep = ""))
+load(paste(ARGS_DIR, "cyttools.args.Rdata", sep = ""))
 
-library(limma)
-library(tidyverse)
-library(reshape2)
+RESULTS_DIR <- args$OUT
 
-logitTransform <- function(p) { log(p/(1-p)) }
+source("cyttoolsFunctions.R")
+
 panelDesign <- read.delim(args$PANEL)
-md <- read.delim(args$METADATA)
-props_table <- read.delim(args$FEATURETABLE, row.names = 1)
+targets <- read.delim(args$METADATA)
 
-propData <- logitTransform(props_table)
-
-targets <- md
+colsToCheck <- c("TimePoint", "Condition", "SampleID", "FileName", "Group")
+if(checkDesignCols(targets, colsToCheck)){
+  missingCols <- colsToCheck[which(colsToCheck %in% colnames(targets) == F)]
+  cat("\n\nERROR: PANEL file does not include required columns.
+      \n\nMissing Columns:", missingCols,
+      "\n\nPlease run cyttools.R --makeMetaDataBlank to generate compatible meta data file.\n\nStopping cyttools.R\n\n")
+  q()
+}
 
 targets$TimePoint <- factor(targets$TimePoint, levels = unique(targets$TimePoint))
 targets$Condition <- factor(targets$Condition, levels = unique(targets$Condition))
@@ -53,20 +54,19 @@ design <- model.matrix(~ 0 + exprDesign + targets$SampleID + targets$Group)
 colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
 colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
 
+props_table <- read.delim(args$FEATURETABLE, row.names = 1)
+propData <- logitTransform(props_table)
+
 fit <- lmFit(propData, design = design)
-numUnEst <- rowSums(is.na(fit$coefficients)) 
-numUnEst <- sum(numUnEst > 0 & numUnEst < NCOL(fit$coefficients))
-if(numUnEst == nrow(propData)){
+if(checkLmFit(fit, propData)){
   design <- model.matrix(~ 0 + exprDesign + targets$SampleID)
   
   colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
   colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
   
   fit <- lmFit(propData, design = design)
-  numUnEst <- rowSums(is.na(fit$coefficients)) 
-  numUnEst <- sum(numUnEst > 0 & numUnEst < NCOL(fit$coefficients))
   
-  if(numUnEst == nrow(propData)){
+  if(checkLmFit(fit, propData)){
     design <- model.matrix(~ 0 + exprDesign)
     
     colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))

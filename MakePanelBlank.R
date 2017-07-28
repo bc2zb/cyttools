@@ -20,20 +20,15 @@ DIR    Provide directory for cytools.args.Rdata to be found, automatically gener
 
 args <- docopt(doc)
 
-RESULTS_DIR <- args$DIR
+ARGS_DIR <- args$DIR
 
-cat("\nLoading arguments from", args$DIR, "\n")
+cat("\nLoading arguments from", ARGS_DIR, "\n")
 
-load(paste(RESULTS_DIR, "cyttools.args.Rdata", sep = ""))
+load(paste(ARGS_DIR, "cyttools.args.Rdata", sep = ""))
 
-library(flowCore)
-library(cytofCore)
-library(flowVS)
-library(flowType)
-library(tidyverse)
-library(reshape2)
+source("cyttoolsFunctions.R")
 
-panelColnames <- c("name", "desc", "range", "minRange", "maxRange", "Ignore", "Lineage", "Functional", "Barcode", "Viability", "EventDiscrimination", "EQBEADS")
+panelColnames <- c("name", "desc", "range", "minRange", "maxRange", "TransformCofactor", "Ignore", "Lineage", "Functional", "Barcode", "Viability", "EventDiscrimination", "EQBEADS")
 
 dir <- args$DIR # grabs directory from initial cyttools call
 file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
@@ -47,7 +42,9 @@ for ( i in c((ncol(panel)+1):length(panelColnames))){
 }
 
 colnames(panelBlank) <- panelColnames
+panelBlank$TransformCofactor <- rep(5, nrow(panelBlank))
 
+RESULTS_DIR <- args$OUT
 panelFile <- paste(RESULTS_DIR, "panelFile.txt", sep = "")
 
 write.table(panelBlank, file = panelFile, sep = "\t", quote = F, row.names = F)

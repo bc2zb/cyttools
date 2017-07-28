@@ -6,7 +6,7 @@ require(methods)
 "
 Usage:
 NonRedundancyScoreComputation.R (-h | --help | --version)
-NonRedundancyScoreComputation.R DIR PANEL
+NonRedundancyScoreComputation.R DIR
 
 Description:   This script is a template for making docopts compatible Rscripts
 Options:
@@ -14,46 +14,38 @@ Options:
 
 Arguments:
 
-DIR    Provide directory
+DIR    Provide directory where cyttools.args.Rdata file is located
 " -> doc
 
 
 args <- docopt(doc)
 
-RESULTS_DIR <- args$DIR
+ARGS_DIR <- args$DIR
 
-cat("\nLoading arguments from", args$DIR, "\n")
+cat("\nLoading arguments from", ARGS_DIR, "\n")
 
-load(paste(RESULTS_DIR, "cyttools.args.Rdata", sep = ""))
+load(paste(ARGS_DIR, "cyttools.args.Rdata", sep = ""))
 
-library(flowCore)
-library(cytofCore)
-library(flowVS)
-library(flowType)
-library(tidyverse)
-library(reshape2)
+source("cyttoolsFunctions.R")
 
 dir <- args$DIR # grabs directory from initial cyttools call
 file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
-flowSet <- read.flowSet(file, transformation = F) # reads in files as flowSet, required for flowType
-
 targets <- read.delim(args$PANEL)
+colsToCheck <- c("Ignore", "TransformCofactor", "Lineage", "Functional")
+if(checkDesignCols(targets, colsToCheck)){
+  cat("\n\nERROR: PANEL file does not include required columns.
+      \n\nMissing Columns:", colsToCheck[which(colsToCheck %in% colnames(targets) == F)],
+      "\n\nPlease run cyttools.R --makePanelBlank to generate compatible panel file.\n\nStopping cyttools.R\n\n")
+  q()
+}
 
 lineage_markers <- targets$name[targets$Lineage == 1]
 functional_markers <- targets$name[targets$Functional == 1]
 
-flowSet.trans <- transFlowVS(flowSet,
-                             as.character(targets$name[which(targets$Lineage == 1 |
-                                                               targets$Functional == 1)]),
-                             rep(5, length(targets$name[which(targets$Lineage == 1 |
-                                                                targets$Functional == 1)])))
-
-## Define a function that calculates the NRS per sample
-NRS <- function(x, ncomp = 3){
-  pr <- prcomp(x, center = TRUE, scale. = FALSE)
-  score <- rowSums(outer(rep(1, ncol(x)),
-                         pr$sdev[1:ncomp]^2) * abs(pr$rotation[,1:ncomp]))
-  return(score)
+if(args$transform == T){
+  flowSet.trans <- read.flowSet.transVS(targets, file)
+}else{
+  flowSet.trans <- read.flowSet(file)
 }
 
 ## Calculate the score
@@ -77,6 +69,7 @@ for(i in 1:length(nrs_all)){
 
 targets$NRS <- nrs_all
 
+RESULTS_DIR <- args$OUT
 nrsFile <- paste(RESULTS_DIR, "nrsPanelFile.txt", sep = "")
 
 write.table(targets, file = nrsFile, sep = "\t", quote = F, row.names = F)

@@ -6,7 +6,7 @@ require(methods)
 "
 Usage:
 FLowSOM.R (-h | --help | --version)
-FLowSOM.R DIR PANEL
+FLowSOM.R DIR
 
 Description:   This script is a template for making docopts compatible Rscripts
 Options:
@@ -15,61 +15,45 @@ Options:
 Arguments:
 
 DIR    Provide directory
-PANEL  Provide a panel design file, use --makePanelBlank to generate and edit as needed
 
 " -> doc
 
 
 args <- docopt(doc)
 
-RESULTS_DIR <- args$DIR
+ARGS_DIR <- args$DIR
 
-cat("\nLoading arguments from", args$DIR, "\n")
+cat("\nLoading arguments from", ARGS_DIR, "\n")
 
-load(paste(RESULTS_DIR, "cyttools.args.Rdata", sep = ""))
+load(paste(ARGS_DIR, "cyttools.args.Rdata", sep = ""))
 
-library(flowCore)
-library(cytofCore)
-library(flowVS)
-library(flowType)
-library(tidyverse)
-library(reshape2)
-library(FlowSOM)
+RESULTS_DIR <- args$OUT
+
+source("cyttoolsFunctions.R")
+
+file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
+
+targets <- read.delim(args$PANEL)
+colsToCheck <- c("Ignore", "TransformCofactor", "Lineage", "Functional", "NRS")
+if(checkDesignCols(targets, colsToCheck)){
+  missingCols <- colsToCheck[which(colsToCheck %in% colnames(targets) == F)]
+  cat("\n\nERROR: PANEL file does not include required columns.
+      \n\nMissing Columns:", missingCols,
+      "\n\nPlease run cyttools.R --makePanelBlank and cyttools.R --computeNRS to generate compatible panel file.\n\nStopping cyttools.R\n\n")
+  q()
+}
 
 dir <- args$DIR # grabs directory from initial cyttools call
 file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
-flowSet <- read.flowSet(file, transformation = F) # reads in files as flowSet, required for flowType
-
-targets <- read.delim(args$PANEL)
 
 lineage_markers <- targets$name[targets$Lineage == 1]
 functional_markers <- targets$name[targets$Functional == 1]
 
-flowSet.trans <- transFlowVS(flowSet,
-                             as.character(targets$name[which(targets$Lineage == 1 |
-                                                               targets$Functional == 1)]),
-                             rep(5, length(targets$name[which(targets$Lineage == 1 |
-                                                                targets$Functional == 1)])))
-
-if(length(grep("NRS", colnames(targets))) == 0){
-  
-  COMMAND <- paste("Rscript NonRedundancyScoreComputation.R", RESULTS_DIR, paste("'", args$PANEL, "'", sep = ""))
-  system(command = COMMAND)
-  targets <- read.delim(paste(RESULTS_DIR, "nrsPanelFile.txt", sep = ""))
+if(args$transform == T){
+  flowSet.trans <- read.flowSet.transVS(targets, file)
+}else{
+  flowSet.trans <- read.flowSet(file)
 }
-
-if(length(grep("Ignore", colnames(targets))) == 0){
-  
-  targets$Ignore <- c(targets$Lineage == 0 & targets$Functional == 0)
-  targets$Ignore[targets$Ignore == T] <- 1
-}
-
-
-
-# order the markers using NRS, dropping markers set to "1" in Ignore column of panel design
-lineage_markers_ord <- targets$name
-lineage_markers_ord <- lineage_markers_ord[lineage_markers_ord %in% targets$name[which(targets$Ignore == 0)]]
-lineage_markers_ord <- lineage_markers_ord[order(targets$NRS[which(targets$name %in% lineage_markers_ord)], decreasing = T)]
 
 fsom <- ReadInput(flowSet.trans, transform = FALSE, scale = FALSE)
 set.seed(1234)

@@ -14,17 +14,21 @@ Options:
 
 Arguments:
 
-DIR    Provide directory
+DIR    Provide directory where cyttools.args.Rdata file is located
 " -> doc
 
 
 args <- docopt(doc)
 
-RESULTS_DIR <- args$DIR
+ARGS_DIR <- args$DIR
 
-cat("\nLoading arguments from", args$DIR, "\n")
+cat("\nLoading arguments from", ARGS_DIR, "\n")
 
-load(paste(RESULTS_DIR, "cyttools.args.Rdata", sep = ""))
+load(paste(ARGS_DIR, "cyttools.args.Rdata", sep = ""))
+
+RESULTS_DIR <- args$OUT
+
+source("cyttoolsFunctions.R")
 
 ##########################################################################
 ############################ R code goes here ############################
@@ -35,7 +39,6 @@ load(paste(RESULTS_DIR, "cyttools.args.Rdata", sep = ""))
 ##########################################################################
 ############################     End code     ############################
 ##########################################################################
-
 
 workspaceFile <- paste(RESULTS_DIR, "TemplateWorkspace.Rdata", sep = "")
 
