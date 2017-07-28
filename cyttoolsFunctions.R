@@ -28,7 +28,9 @@ checkDesignCols <- function(targets, colsToCheck){
                                         colnames(targets))
                       if(length(checkCols) != length(colsToCheck)){
                         return(TRUE)
-                        }
+                      }else{
+                        return(FALSE)
+                      }
 }
 
 NRS <- function(x, ncomp = 3){
