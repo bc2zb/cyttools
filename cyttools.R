@@ -12,6 +12,7 @@ cyttools.R [--transform=<bool>] --computeNRS DIR PANEL OUT
 cyttools.R [--transform=<bool>] --cluster=<algorithm> DIR PANEL OUT
 cyttools.R --compDiffAbndnc PANEL FEATURETABLE METADATA OUT
 cyttools.R --compDiffExpr PANEL FEATURETABLE METADATA OUT
+cyttools.R --batchFlowType DIR OUT
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
@@ -23,6 +24,7 @@ Options:
 --cluster=<algorithm>    [default: FlowSOM] The algorithm to use for clustering.
 --compDiffAbndnc         Test for differential abundance
 --compDiffExpr           Test for differential expression
+--batchFlowType          Run FlowType in batch mode, iterating over all .Rdata files in DIR
 
 Arguments:
 
@@ -38,7 +40,7 @@ FEATURETABLE  Provide a expression or abundance feature table, these are outputs
 args <- docopt(doc)
 algList <- c("FlowSOM",
              "FlowType", "ParFlowType",
-             "BatchFlowTypeDataPrep", "BatchFlowType", "BatchFlowTypeDataMerge")
+             "BatchFlowTypeDataPrep", "BatchFlowTypeDataMerge")
 
 
 if(args$`--version` == T){ # returns version if version is requested
@@ -89,19 +91,19 @@ if(args$`--version` == T){ # returns version if version is requested
   }else if(args$`--cluster` == "FlowType"){
     
     cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
-    COMMAND <- paste("Rscript Flowtype.R",
+    COMMAND <- paste("Rscript FlowType.R",
                      paste("'", RESULTS_DIR, "'", sep = ""))
     system(command = COMMAND)
   }else if(args$`--cluster` == "ParFlowType"){
     
     cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
-    COMMAND <- paste("Rscript ParFlowtype.R",
+    COMMAND <- paste("Rscript ParFlowType.R",
                      paste("'", RESULTS_DIR, "'", sep = ""))
     system(command = COMMAND)
-  }else if(args$`--cluster` == "BatchFlowType"){
+  }else if(args$`--batchFlowType` == T){
     
     cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
-    COMMAND <- paste("Rscript BatchFlowtype.R",
+    COMMAND <- paste("Rscript BatchFlowType.R",
                      paste("'", RESULTS_DIR, "'", sep = ""))
     system(command = COMMAND)
   }else if(args$`--cluster` == "BatchFlowTypeDataPrep"){

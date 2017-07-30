@@ -63,6 +63,15 @@ if(length(lineage_markers_ord) > 12){
 
 colsToUse <- which(targets$name %in% lineage_markers_ord == T)
 
+dir.create(paste(RESULTS_DIR, "BatchFlowTypeDataPrepWorkspaces/", sep = ""), showWarnings = F, recursive = T)
+for ( i in 1:length(flowSet.trans)){
+  batchWorkspaceFile <- paste(RESULTS_DIR, "BatchFlowTypeDataPrepWorkspaces/BatchFlowTypeDataPrepWorkspace_", i, ".Rdata", sep = "")
+  ffb <- flowSet.trans[[i]]
+  parameters(ffb)$desc <- targets$desc
+  ffb <- ffb[,colsToUse]
+  save(ffb, file = batchWorkspaceFile)
+}
+
 workspaceFile <- paste(RESULTS_DIR, "FlowTypeWorkspace.Rdata", sep = "")
 
 save.image(file = workspaceFile)
