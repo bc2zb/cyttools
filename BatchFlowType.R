@@ -20,6 +20,8 @@ DIR    Provide directory for cytools.args.Rdata to be found, automatically gener
 
 args <- docopt(doc)
 
+cat(args$DIR, "\n", args$OUT, "\n")
+
 ARGS_DIR <- args$DIR
 
 ARGS_DIR <- gsub("DataPrepWorkspace\\_.*", "Results/", ARGS_DIR)
@@ -30,23 +32,23 @@ cat("\nLOADING ARGUEMENTS:", ARGS_FILE, "\n")
 
 load(ARGS_FILE)
 
-# RESULTS_DIR <- args$OUT
-# 
-# cat("\nResults will be written to", RESULTS_DIR, "\n")
-# 
-# source("cyttoolsFunctions.R")
-# 
-# file <- args$DIR # grabs directory from initial cyttools call
-# 
-# load(file)
-# 
-# ResList <- flowType(ffb,
-#                     MarkerNames = parameters(ffb)$desc,
-#                     MemLimit = 15)
-# 
-# workspaceFile <- paste(RESULTS_DIR, 
-#                        gsub(gsub("BatchFlowTypeResults/", "", RESULTS_DIR),
-#                             "",
-#                             file), sep = "")
-# 
-# save.image(file = workspaceFile)
+RESULTS_DIR <- args$OUT
+
+cat("\nResults will be written to", RESULTS_DIR, "\n")
+
+source("cyttoolsFunctions.R")
+
+file <- args$DIR # grabs directory from initial cyttools call
+
+load(file)
+
+ResList <- flowType(ffb,
+                    MarkerNames = parameters(ffb)$desc,
+                    MemLimit = 15)
+
+workspaceFile <- paste(RESULTS_DIR,
+                       gsub(gsub("BatchFlowTypeResults/", "", RESULTS_DIR),
+                            "",
+                            file), sep = "")
+
+save.image(file = workspaceFile)

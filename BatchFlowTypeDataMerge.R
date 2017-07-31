@@ -30,15 +30,63 @@ RESULTS_DIR <- args$OUT
 
 source("cyttoolsFunctions.R")
 
-file <- args$DIR # grabs directory from initial cyttools call
+dir <- args$DIR # grabs directory from initial cyttools call
+file <- list.files(dir, pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
+
+targets <- read.delim(args$PANEL)
+colsToCheck <- c("Ignore", "TransformCofactor", "Lineage", "Functional", "NRS")
+if(checkDesignCols(targets, colsToCheck)){
+  missingCols <- colsToCheck[which(colsToCheck %in% colnames(targets) == F)]
+  cat("\n\nERROR: PANEL file does not include required columns.
+      \n\nMissing Columns:", missingCols,
+      "\n\nPlease run cyttools.R --makePanelBlank and cyttools.R --computeNRS to generate compatible panel file.\n\nStopping cyttools.R\n\n")
+  q()
+}
+
+
+lineage_markers <- targets$name[targets$Lineage == 1]
+functional_markers <- targets$name[targets$Functional == 1]
+
+if(args$transform == T){
+  flowSet.trans <- read.flowSet.transVS(targets, file)
+}else{
+  flowSet.trans <- read.flowSet(file)
+}
+
+# order the markers using NRS, dropping markers set to "1" in Ignore column of panel design
+lineage_markers_ord <- targets$name
+lineage_markers_ord <- lineage_markers_ord[lineage_markers_ord %in% targets$name[which(targets$Ignore == 0)]]
+lineage_markers_ord <- lineage_markers_ord[order(targets$NRS[which(targets$name %in% lineage_markers_ord)], decreasing = T)]
+if(length(lineage_markers_ord) > 12){
+  lineage_markers_ord <- lineage_markers_ord[1:12]
+}
+
+colsToUse <- which(targets$name %in% lineage_markers_ord == T)
+
+dir <- args$BATCH_DIR # grabs directory from initial cyttools call
+fileList <- list.files(dir, pattern='\\_[0-9]+\\.Rdata$', full=TRUE) # captures all FCS files in the directory
 
 panelDesign <- targets
 
-phenotype.names=unlist(lapply(ResList[[1]]@PhenoCodes,function(x){
+ResListAll <- list()
+for ( i in 1:length(fileList)){
+  fffile <- fileList[i]
+  load(fffile)
+  ResListAll <- c(ResListAll, ResList)
+}
+ResList <- ResListAll
+rm(ResListAll)
+
+fileOrder <- basename(fileList)
+fileNumbers <- gsub(".*\\_|\\.Rdata", "", fileOrder) %>% as.numeric()
+ResList <- ResList[order(fileNumbers, decreasing = F)]
+names(ResList) <- sampleNames(phenoData(flowSet.trans))
+
+phenotype.names <- unlist(lapply(ResList[[1]]@PhenoCodes,function(x){
   return(decodePhenotype(x,
-                         as.character(targets$desc[colsToUse]),
+                         as.character(ResList[[1]]@MarkerNames),
                          ResList[[1]]@PartitionsPerMarker))}))
-names(ResList[[1]]@PhenoCodes)=phenotype.names
+names(ResList[[1]]@PhenoCodes) <- phenotype.names
 
 nodeExprTable <- lapply(ResList, function(x){return(apply(x@Partitions, 1, paste, collapse =""))})
 
@@ -72,8 +120,16 @@ for ( i in 1:length(ResList[[1]]@PhenoCodes)){
   subPopNodeExprTable <- acast(subPopExprTable,
                                Mapping + Metal ~ FileNames,
                                fun.aggregate = median,
-                               value.var = "Intensity" 
+                               value.var = "Intensity"
   )
+  if(ncol(subPopNodeExprTable) != ncol(subPopsExprTable)){
+    missingCol <- colnames(subPopsExprTable)[which(colnames(subPopsExprTable) %in% (subPopExprTable$FileNames %>% unique()) == F)]
+    oldColnames <- colnames(subPopNodeExprTable)
+    subPopNodeExprTable <- cbind(subPopNodeExprTable, matrix(nrow = nrow(subPopNodeExprTable),
+                                                             ncol = length(missingCol)))
+    colnames(subPopNodeExprTable) <- c(oldColnames, missingCol)
+  }
+  subPopNodeExprTable <- subPopNodeExprTable[,orderVectorByVector(colnames(subPopNodeExprTable), colnames(subPopsExprTable))]
   subPopsExprTable <- rbind(subPopsExprTable, subPopNodeExprTable)
 }
 
@@ -99,6 +155,6 @@ PhenoCodesFile <- paste(RESULTS_DIR, "PhenoCodes.txt", sep = "")
 
 write.table(PhenoCodes, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = F)
 
-workspaceFile <- paste(RESULTS_DIR, "FlowTypeWorkspace.Rdata", sep = "")
+workspaceFile <- paste(RESULTS_DIR, "BatchFlowTypeDataMergeWorkspace.Rdata", sep = "")
 
 save.image(file = workspaceFile)

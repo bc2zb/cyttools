@@ -69,3 +69,33 @@ checkLmFit <- function(fit, propData){
     return(FALSE)
   }
 }
+
+recoderFunc <- function(data, oldvalue, newvalue) {
+  
+  # convert any factors to characters
+  
+  if (is.factor(data))     data     <- as.character(data)
+  if (is.factor(oldvalue)) oldvalue <- as.character(oldvalue)
+  if (is.factor(newvalue)) newvalue <- as.character(newvalue)
+  
+  # create the return vector
+  
+  newvec <- data
+  
+  # put recoded values into the correct position in the return vector
+  
+  for (i in unique(oldvalue)) newvec[data == i] <- newvalue[oldvalue == i]
+  
+  return(newvec)
+  
+}
+
+# order one vector by the contents of another vector
+orderVectorByVector <- function(x,y){
+  orderOrder <- vector()
+  for (i in 1:length(y)){
+    index <- which(x == as.character(y[i]))
+    orderOrder <- c(orderOrder, index)
+  }
+  return(orderOrder)
+}

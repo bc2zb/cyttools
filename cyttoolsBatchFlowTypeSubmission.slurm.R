@@ -13,14 +13,15 @@ module load R/openmpi/3.1.1
 
 CYTTOOLS_LOCATION="/home/bc2zb/cyttools-0.2.1/"
 FCS_DIR="/scratch/bc2zb/JXSTUFF/ALL_FILES/AllFiles/"
+Rdata_DIR="/Volumes/som-fccf/FC_McNamaraCA/McSkimming/170602 Capaldo HK exp stim cells fcs files/cyttoolsResultsFlowType/cyttoolsClusteringResults/BatchFlowTypeDataPrepWorkspaces/"
 PANEL="/scratch/bc2zb/JXSTUFF/panelForCyttoolsRun.txt"
 METADATA="/scratch/bc2zb/JXSTUFF/MetaDataFile.txt"
 RESULTS_BLANKS="/scratch/bc2zb/JXSTUFF/ALL_FILES/cyttoolsBlanksResults/"
-RESULTS_CLUSTERING="/scratch/bc2zb/JXSTUFF/ALL_FILES/cyttoolsClusteringResults/"
+RESULTS_CLUSTERING="/Volumes/som-fccf/FC_McNamaraCA/McSkimming/170602 Capaldo HK exp stim cells fcs files/cyttoolsResultsFlowType/cyttoolsClusteringResults/BatchFlowTypeDataPrepWorkspaces/BatchFlowTypeResults/"
 RESULTS_DIFFERENTIAL="/scratch/bc2zb/JXSTUFF/ALL_FILES/cyttoolsDifferentialResults/"
 
 cd $CYTTOOLS_LOCATION
 
-Rscript cyttools.R --cluster=BatchFlowType "$FCS_DIR" "$PANEL" "$RESULTS_CLUSTERING"
+Rscript cyttools.R --cluster=BatchFlowType "$Rdata_DIR" "$RESULTS_CLUSTERING"
 
 
