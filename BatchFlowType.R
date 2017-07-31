@@ -51,4 +51,4 @@ workspaceFile <- paste(RESULTS_DIR,
                             "",
                             file), sep = "")
 
-save.image(file = workspaceFile)
+save(ResList, file = workspaceFile)

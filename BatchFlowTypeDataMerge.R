@@ -68,6 +68,7 @@ fileList <- list.files(dir, pattern='\\_[0-9]+\\.Rdata$', full=TRUE) # captures 
 
 panelDesign <- targets
 
+# GRRRRRR
 ResListAll <- list()
 for ( i in 1:length(fileList)){
   fffile <- fileList[i]
@@ -102,11 +103,12 @@ nodeExprTable$NodeNames <- recoderFunc(nodeExprTable$Mapping,
 
 nodeExprTable$FileNames <- gsub(".fcs[0-9]*", ".fcs", nodeExprTable$CellId)
 
-ResultsTableFile <- paste(RESULTS_DIR, "FlowTypeResultsTable.txt", sep = "")
+ResultsTableFile <- paste(RESULTS_DIR, "BatchFlowTypeDataMergeResultsTable.txt", sep = "")
 
 write.table(nodeExprTable, ResultsTableFile, sep = "\t", quote = F, row.names = F)
 
-subPopsExprTable <- matrix(ncol = length(ResList))
+subPopsExprTable <- list()
+length(subPopsExprTable) <- length(phenotype.names)
 for ( i in 1:length(ResList[[1]]@PhenoCodes)){
   subPopCode <- gsub("0", ".", ResList[[1]]@PhenoCodes[i])
   subPopData <- nodeExprTable[grep(subPopCode, nodeExprTable$Mapping),]
@@ -122,16 +124,23 @@ for ( i in 1:length(ResList[[1]]@PhenoCodes)){
                                fun.aggregate = median,
                                value.var = "Intensity"
   )
-  if(ncol(subPopNodeExprTable) != ncol(subPopsExprTable)){
-    missingCol <- colnames(subPopsExprTable)[which(colnames(subPopsExprTable) %in% (subPopExprTable$FileNames %>% unique()) == F)]
-    oldColnames <- colnames(subPopNodeExprTable)
-    subPopNodeExprTable <- cbind(subPopNodeExprTable, matrix(nrow = nrow(subPopNodeExprTable),
-                                                             ncol = length(missingCol)))
-    colnames(subPopNodeExprTable) <- c(oldColnames, missingCol)
-  }
-  subPopNodeExprTable <- subPopNodeExprTable[,orderVectorByVector(colnames(subPopNodeExprTable), colnames(subPopsExprTable))]
-  subPopsExprTable <- rbind(subPopsExprTable, subPopNodeExprTable)
+  subPopsExprTable[[i]] <- subPopNodeExprTable
 }
+
+orderedSubPopsExprTable <- lapply(subPopsExprTable, function(x){
+  if(ncol(x) != length(names(ResList))){
+    missingCol <- names(ResList)[which(names(ResList) %in% colnames(x) == F)]
+    oldColnames <- colnames(x)
+    subPopNodeExprTable <- cbind(x, matrix(nrow = nrow(x),
+                                           ncol = length(missingCol)))
+    colnames(subPopNodeExprTable) <- c(oldColnames, missingCol)
+    x <- subPopNodeExprTable
+  }
+  x <- x[,orderVectorByVector(colnames(x), names(ResList))]
+  return(x)
+})
+
+subPopsExprTable <- do.call(rbind, orderedSubPopsExprTable)
 
 nodeExprTableFile <- paste(RESULTS_DIR, "nodeExpressionFeatureTable.txt", sep = "")
 
