@@ -49,7 +49,11 @@ targets$SampleID <- factor(targets$SampleID, levels = unique(targets$SampleID))
 
 exprDesign <- paste(targets$Condition, targets$TimePoint, sep = "_")
 
-design <- model.matrix(~ 0 + exprDesign + targets$SampleID + targets$Group)
+if(length(unique(targets$Group)) > 1){
+  design <- model.matrix(~ 0 + exprDesign + targets$SampleID + targets$Group)
+}else{
+  design <- model.matrix(~ 0 + exprDesign + targets$SampleID)
+}
 
 colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
 colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
