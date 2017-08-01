@@ -162,7 +162,7 @@ PhenoCodes <- data.frame(PhenoCodes = ResList[[1]]@PhenoCodes,
 
 PhenoCodesFile <- paste(RESULTS_DIR, "PhenoCodes.txt", sep = "")
 
-write.table(PhenoCodes, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = F)
+write.table(PhenoCodes, PhenoCodesFile, sep = "\t", quote = F, row.names = F)
 
 workspaceFile <- paste(RESULTS_DIR, "BatchFlowTypeDataMergeWorkspace.Rdata", sep = "")
 

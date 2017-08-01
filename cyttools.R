@@ -14,6 +14,7 @@ cyttools.R --compDiffAbndnc PANEL FEATURETABLE METADATA OUT
 cyttools.R --compDiffExpr PANEL FEATURETABLE METADATA OUT
 cyttools.R --batchFlowType DIR OUT
 cyttools.R --batchFlowTypeDataMerge DIR PANEL OUT BATCH_DIR
+cyttools.R --makeReport DIR CLUSTERDIR DIFFDIR PANEL METADATA OUT
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
@@ -27,6 +28,7 @@ Options:
 --compDiffExpr           Test for differential expression
 --batchFlowType          Run FlowType in batch mode, iterating over all .Rdata files in DIR
 --batchFlowTypeDataMerge Merge FlowType results from batch mode
+--makeReport             Plot significant results from differential analysis
 
 Arguments:
 
@@ -35,12 +37,14 @@ OUT           Provide directory for results to be saved to
 PANEL         Provide a panel design file, use --makePanelBlank to generate and edit as needed
 METADATA      Provide a meta data file, use --makeMetaDataBlank to generate and edit as needed
 FEATURETABLE  Provide a expression or abundance feature table, these are outputs of --cluster command
-BATCH_DIR     Provide a directory of BATCH results files
+BATCHDIR     Provide a directory of BATCH results files
+CLUSTERDIR   Provide a directory of clustering results files
+DIFFDIR      Provide a directory of differential results files
 
 " -> doc
 
-
 args <- docopt(doc)
+
 algList <- c("FlowSOM",
              "FlowType", "ParFlowType", "BatchFlowTypeDataPrep")
 
@@ -82,6 +86,11 @@ if(args$`--version` == T){ # returns version if version is requested
   }else if(args$`--compDiffExpr` == T){
     
     COMMAND <- paste("Rscript compDiffExpr.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""))
+    system(command = COMMAND)
+  }else if(args$`--makeReport` == T){
+    
+    COMMAND <- paste("Rscript makeReport.R",
                      paste("'", RESULTS_DIR, "'", sep = ""))
     system(command = COMMAND)
   }else if(args$`--batchFlowType` == T){
