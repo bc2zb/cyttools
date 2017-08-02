@@ -1,4 +1,4 @@
-libraryList <- c("tidyverse", "reshape2","parallel", "devtools",
+libraryList <- c("tidyverse", "reshape2","parallel", "devtools", "stringr",
                  "flowCore", "limma", "FlowSOM", "flowType",
                  "cytofCore")
 
