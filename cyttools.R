@@ -18,17 +18,17 @@ cyttools.R --makeReport DIR CLUSTERDIR DIFFDIR PANEL METADATA OUT
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
---version                Show the current version.
---makePanelBlank         Produce a panel design file based on FCS files in DIR
---makeMetaDataBlank      Produce a meta data file based on FCS files in DIR
---transform=<true>       [default: TRUE] Transform data using arcsinH and cofactors specified in PANEL
---computeNRS             Compute non redundancy score for parameters
---cluster=<algorithm>    [default: FlowSOM] The algorithm to use for clustering.
---compDiffAbndnc         Test for differential abundance
---compDiffExpr           Test for differential expression
---batchFlowType          Run FlowType in batch mode, iterating over all .Rdata files in DIR
---batchFlowTypeDataMerge Merge FlowType results from batch mode
---makeReport             Plot significant results from differential analysis
+--version                 Show the current version.
+--makePanelBlank          Produce a panel design file based on FCS files in DIR
+--makeMetaDataBlank       Produce a meta data file based on FCS files in DIR
+--transform=<true>        [default: TRUE] Transform data using arcsinH and cofactors specified in PANEL
+--computeNRS              Compute non redundancy score for parameters
+--cluster=<algorithm>     [default: FlowSOM] The algorithm to use for clustering.
+--compDiffAbndnc          Test for differential abundance
+--compDiffExpr            Test for differential expression
+--batchFlowType           Run FlowType in batch mode, iterating over all .Rdata files in DIR
+--batchFlowTypeDataMerge  Merge FlowType results from batch mode
+--makeReport              Plot significant results from differential analysis
 
 Arguments:
 
@@ -37,9 +37,9 @@ OUT           Provide directory for results to be saved to
 PANEL         Provide a panel design file, use --makePanelBlank to generate and edit as needed
 METADATA      Provide a meta data file, use --makeMetaDataBlank to generate and edit as needed
 FEATURETABLE  Provide a expression or abundance feature table, these are outputs of --cluster command
-BATCHDIR     Provide a directory of BATCH results files
-CLUSTERDIR   Provide a directory of clustering results files
-DIFFDIR      Provide a directory of differential results files
+BATCHDIR      Provide a directory of BATCH results files
+CLUSTERDIR    Provide a directory of clustering results files
+DIFFDIR       Provide a directory of differential results files
 
 " -> doc
 
