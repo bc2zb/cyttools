@@ -118,7 +118,9 @@ for ( i in 1:ncol(cont.matrix)){
   firstTimePoint <- contMatrixRowIDs$TimePoint[cont.matrix[,i] == 1]
   secondTimePoint <- contMatrixRowIDs$TimePoint[cont.matrix[,i] == -1]
   
-  if (firstCondition == secondCondition & firstTimePoint != secondTimePoint){
+  if(any(unlist(lapply(c(firstCondition, secondCondition, firstTimePoint, secondTimePoint), is.na)))){
+    validContrastIndex[i] <- F
+  }else if(firstCondition == secondCondition & firstTimePoint != secondTimePoint){
     validContrastIndex[i] <- T
     humanReadableColNames[i] <- paste(firstCondition,
                                       paste(firstTimePoint,
