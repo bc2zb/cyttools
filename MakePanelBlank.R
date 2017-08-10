@@ -44,7 +44,35 @@ for ( i in c((ncol(panel)+1):length(panelColnames))){
 colnames(panelBlank) <- panelColnames
 panelBlank$TransformCofactor <- rep(5, nrow(panelBlank))
 
+panel <- panelBlank
+
+panel$EQBEADS[grep("EQBEADS", panel$desc)] <- 1
+panel$Barcode[grep("Pd", panel$desc)] <- 1
+panel$EventDiscrimination[grep("Ir", panel$desc)] <- 1
+panel$Viability[grep("Pt", panel$desc)] <- 1
+
+panel$descOriginal <- panel$desc
+
+panel$desc <- gsub(".*\\_|-EQBEADS", "", panel$desc)
+
+panel$metal <- gsub("Di", "", panel$name)
+panel$mass <- gsub("[A-z]*", "", panel$metal)
+panel$element <- gsub("[0-9]*", "", panel$metal)
+panel$nameCheck <- paste0(panel$mass, panel$element)  
+
+panel$Ignore[which(panel$nameCheck == panel$desc)] <- 1
+panel$Ignore[which(panel$Barcode == 1)] <- 1
+panel$Ignore[grep("EQBEADS|dist", panel$desc)] <- 1
+panel$Ignore[is.na(panel$desc)] <- 1
+panel$Ignore[which(panel$Viability == 1)] <- 1
+panel$Ignore[which(panel$EventDiscrimination == 1)] <- 1
+
+functionalMarkerIndex <- grep("p", panel$desc)
+
+panel$Lineage[panel$Ignore == 0 & panel$Functional == 0] <- 1
+
+
 RESULTS_DIR <- args$OUT
 panelFile <- paste(RESULTS_DIR, "panelFile.txt", sep = "")
 
-write.table(panelBlank, file = panelFile, sep = "\t", quote = F, row.names = F)
+write.table(panel, file = panelFile, sep = "\t", quote = F, row.names = F)
