@@ -58,7 +58,11 @@ if(length(unique(targets$Group)) > 1){
 colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
 colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
 
+orderList <- gsub("\\s", ".", targets$FileName)
+
 props_table <- read.delim(args$FEATURETABLE, row.names = 1)
+props_table <- props_table[,orderVectorByListOfTerms(colnames(props_table), orderList)]
+
 propData <- logitTransform(props_table)
 
 fit <- lmFit(propData, design = design)

@@ -99,3 +99,15 @@ orderVectorByVector <- function(x,y){
   }
   return(orderOrder)
 }
+
+orderVectorByListOfTerms <- function(x,y){
+  y <- rev(y)
+  finalVector <- c(1:length(x))
+  for (i in 1:length(y)){
+    index <- grep(as.character(y[i]), x[finalVector])
+    other <- grep(as.character(y[i]), x[finalVector], invert = T)
+    nextIndex <- c(index, other)
+    finalVector <- finalVector[nextIndex]
+  }
+  return(finalVector)
+}

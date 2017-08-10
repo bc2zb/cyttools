@@ -56,7 +56,11 @@ if(length(unique(targets$Group)) > 1){
 colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
 colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
 
+orderList <- gsub("\\s", ".", targets$FileName)
+
 nodeExprTable <- read.delim(args$FEATURETABLE, row.names = 1)
+nodeExprTable <- nodeExprTable[,orderVectorByListOfTerms(colnames(nodeExprTable), orderList)]
+
 
 fit <- lmFit(nodeExprTable, design = design)
 if(checkLmFit(fit, nodeExprTable)){
