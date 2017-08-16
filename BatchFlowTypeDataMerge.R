@@ -107,44 +107,44 @@ ResultsTableFile <- paste(RESULTS_DIR, "BatchFlowTypeDataMergeResultsTable.txt",
 
 write.table(nodeExprTable, ResultsTableFile, sep = "\t", quote = F, row.names = F)
 
-subPopsExprTable <- list()
-length(subPopsExprTable) <- length(phenotype.names)
-for ( i in 1:length(ResList[[1]]@PhenoCodes)){
-  subPopCode <- gsub("0", ".", ResList[[1]]@PhenoCodes[i])
-  subPopData <- nodeExprTable[grep(subPopCode, nodeExprTable$Mapping),]
-  subPopExprTable <- melt(subPopData,
-                          measure.vars = colnames(subPopData)[colnames(subPopData) %in% panelDesign$name[panelDesign$Ignore == 0] == T],
-                          id.vars = colnames(subPopData)[colnames(subPopData) %in% panelDesign$name == F],
-                          variable.name = "Metal",
-                          value.name = "Intensity"
-  )
-  subPopExprTable$Mapping <- rep(gsub("\\.", "0", subPopCode), nrow(subPopExprTable))
-  subPopNodeExprTable <- acast(subPopExprTable,
-                               Mapping + Metal ~ FileNames,
-                               fun.aggregate = median,
-                               value.var = "Intensity"
-  )
-  subPopsExprTable[[i]] <- subPopNodeExprTable
-}
-
-orderedSubPopsExprTable <- lapply(subPopsExprTable, function(x){
-  if(ncol(x) != length(names(ResList))){
-    missingCol <- names(ResList)[which(names(ResList) %in% colnames(x) == F)]
-    oldColnames <- colnames(x)
-    subPopNodeExprTable <- cbind(x, matrix(nrow = nrow(x),
-                                           ncol = length(missingCol)))
-    colnames(subPopNodeExprTable) <- c(oldColnames, missingCol)
-    x <- subPopNodeExprTable
-  }
-  x <- x[,orderVectorByVector(colnames(x), names(ResList))]
-  return(x)
-})
-
-subPopsExprTable <- do.call(rbind, orderedSubPopsExprTable)
-
-nodeExprTableFile <- paste(RESULTS_DIR, "nodeExpressionFeatureTable.txt", sep = "")
-
-write.table(subPopsExprTable, nodeExprTableFile, sep = "\t", quote = F, row.names = T)
+# subPopsExprTable <- list()
+# length(subPopsExprTable) <- length(phenotype.names)
+# for ( i in 1:length(ResList[[1]]@PhenoCodes)){
+#   subPopCode <- gsub("0", ".", ResList[[1]]@PhenoCodes[i])
+#   subPopData <- nodeExprTable[grep(subPopCode, nodeExprTable$Mapping),]
+#   subPopExprTable <- melt(subPopData,
+#                           measure.vars = colnames(subPopData)[colnames(subPopData) %in% panelDesign$name[panelDesign$Ignore == 0] == T],
+#                           id.vars = colnames(subPopData)[colnames(subPopData) %in% panelDesign$name == F],
+#                           variable.name = "Metal",
+#                           value.name = "Intensity"
+#   )
+#   subPopExprTable$Mapping <- rep(gsub("\\.", "0", subPopCode), nrow(subPopExprTable))
+#   subPopNodeExprTable <- acast(subPopExprTable,
+#                                Mapping + Metal ~ FileNames,
+#                                fun.aggregate = median,
+#                                value.var = "Intensity"
+#   )
+#   subPopsExprTable[[i]] <- subPopNodeExprTable
+# }
+# 
+# orderedSubPopsExprTable <- lapply(subPopsExprTable, function(x){
+#   if(ncol(x) != length(names(ResList))){
+#     missingCol <- names(ResList)[which(names(ResList) %in% colnames(x) == F)]
+#     oldColnames <- colnames(x)
+#     subPopNodeExprTable <- cbind(x, matrix(nrow = nrow(x),
+#                                            ncol = length(missingCol)))
+#     colnames(subPopNodeExprTable) <- c(oldColnames, missingCol)
+#     x <- subPopNodeExprTable
+#   }
+#   x <- x[,orderVectorByVector(colnames(x), names(ResList))]
+#   return(x)
+# })
+# 
+# subPopsExprTable <- do.call(rbind, orderedSubPopsExprTable)
+# 
+# nodeExprTableFile <- paste(RESULTS_DIR, "nodeExpressionFeatureTable.txt", sep = "")
+# 
+# write.table(subPopsExprTable, nodeExprTableFile, sep = "\t", quote = F, row.names = T)
 
 all.proportions <- matrix(0,length(ResList[[1]]@CellFreqs),length(ResList))
 for (i in 1:length(ResList))
