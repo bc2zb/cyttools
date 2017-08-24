@@ -153,9 +153,21 @@ for (i in 1:length(ResList))
 colnames(all.proportions) <- names(ResList)
 row.names(all.proportions) <- phenotype.names
 
+countTable <- matrix(0,length(ResList[[1]]@CellFreqs),length(ResList))
+for (i in 1:length(ResList))
+  countTable[,i] = ResList[[i]]@CellFreqs
+
+colnames(countTable) <- names(ResList)
+row.names(countTable) <- phenotype.names
+
 nodeAbndncFeatureTableFile <- paste(RESULTS_DIR, "nodeAbundanceFeatureTable.txt", sep = "")
 
 write.table(all.proportions, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = T)
+
+nodeCountFeatureTableFile <- paste(RESULTS_DIR, "nodeCountFeatureTable.txt", sep = "")
+
+write.table(countTable, nodeCountFeatureTableFile, sep = "\t", quote = F, row.names = T)
+
 
 PhenoCodes <- data.frame(PhenoCodes = ResList[[1]]@PhenoCodes,
                          Names = names(ResList[[1]]@PhenoCodes))

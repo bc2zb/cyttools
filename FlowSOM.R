@@ -108,6 +108,11 @@ nodeAbndncFeatureTableFile <- paste(RESULTS_DIR, "nodeAbundanceFeatureTable.txt"
 
 write.table(props_table, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = T)
 
+nodeCountFeatureTableFile <- paste(RESULTS_DIR, "nodeCountFeatureTable.txt", sep = "")
+
+write.table(countTable, nodeCountFeatureTableFile, sep = "\t", quote = F, row.names = T)
+
+
 workspaceFile <- paste(RESULTS_DIR, "FlowSOMWorkspace.Rdata", sep = "")
 
 save.image(file = workspaceFile)
