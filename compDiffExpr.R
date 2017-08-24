@@ -46,9 +46,15 @@ targets$TimePoint <- factor(targets$TimePoint, levels = unique(targets$TimePoint
 targets$Condition <- factor(targets$Condition, levels = unique(targets$Condition))
 targets$SampleID <- factor(targets$SampleID, levels = unique(targets$SampleID))
 
-exprDesign <- paste(targets$Condition, targets$TimePoint, sep = "_")
+if(length(unique(targets$TimePoint)) > 1){
+  exprDesign <- paste(targets$Condition, targets$TimePoint, sep = "_")
+}else{
+  exprDesign <- targets$Condition
+}
 
-if(length(unique(targets$Group)) > 1){
+if(all(table(targets$SampleID) == 1)){
+  design <- model.matrix(~ 0 + exprDesign)
+}else if(length(unique(targets$Group)) > 1){
   design <- model.matrix(~ 0 + exprDesign + targets$SampleID + targets$Group)
 }else{
   design <- model.matrix(~ 0 + exprDesign + targets$SampleID)
@@ -118,7 +124,13 @@ for ( i in 1:ncol(cont.matrix)){
   firstTimePoint <- contMatrixRowIDs$TimePoint[cont.matrix[,i] == 1]
   secondTimePoint <- contMatrixRowIDs$TimePoint[cont.matrix[,i] == -1]
   
-  if(any(unlist(lapply(c(firstCondition, secondCondition, firstTimePoint, secondTimePoint), is.na)))){
+  if(all(unlist(lapply(c(firstTimePoint, secondTimePoint), is.na))) &
+     firstCondition != secondCondition){
+    validContrastIndex[i] <- T
+    humanReadableColNames[i] <- paste(firstCondition,
+                                            secondCondition,
+                                            sep = "_vs_")
+  }else if(any(unlist(lapply(c(firstCondition, secondCondition, firstTimePoint, secondTimePoint), is.na)))){
     validContrastIndex[i] <- F
   }else if(firstCondition == secondCondition & firstTimePoint != secondTimePoint){
     validContrastIndex[i] <- T
@@ -137,11 +149,12 @@ for ( i in 1:ncol(cont.matrix)){
   }else{validContrastIndex[i] <- F}
 }
 
-cont.matrix <- cont.matrix[,validContrastIndex]
+cont.matrix.2 <- cont.matrix[,validContrastIndex] %>% as.matrix()
 colnames(cont.matrix) <- humanReadableColNames[validContrastIndex]
 
-cont.matrix <- cont.matrix[,grep("BatchEffect", colnames(cont.matrix), invert = T)]
-
+if(any(grepl("BatchEffect", humanReadableColNames))){
+  cont.matrix <- cont.matrix[,grep("BatchEffect", colnames(cont.matrix), invert = T)]
+}
 
 fit2 <- contrasts.fit(fit, cont.matrix)
 fit2 <- eBayes(fit2)
