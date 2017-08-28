@@ -112,6 +112,9 @@ nodeCountFeatureTableFile <- paste(RESULTS_DIR, "nodeCountFeatureTable.txt", sep
 
 write.table(countTable, nodeCountFeatureTableFile, sep = "\t", quote = F, row.names = T)
 
+nodeMedianFeatureTableFile <- paste(RESULTS_DIR, "nodeMedianFeatureTable.txt", sep = "")
+
+write.table(flowSOM.res$map$medianValues, nodeMedianFeatureTableFile, sep = "\t", quote = F, row.names = T)
 
 workspaceFile <- paste(RESULTS_DIR, "FlowSOMWorkspace.Rdata", sep = "")
 
