@@ -78,43 +78,91 @@ ResultsTable$FileNames <- fileNames
 ResultsTable$Mapping <- flowSOM.res$map$mapping[,1]
 ResultsTable$DistToNode <- flowSOM.res$map$mapping[,2]
 
-ResultsTableFile <- paste(RESULTS_DIR, "FlowSOMResultsTable.txt", sep = "")
-
-write.table(ResultsTable, ResultsTableFile, sep = "\t", quote = F, row.names = F)
-
 panelDesign <- targets
 
-nodeExprTable <- melt(ResultsTable,
-                  measure.vars = colnames(ResultsTable)[colnames(ResultsTable) %in% panelDesign$name[panelDesign$Ignore == 0] == T],
-                  id.vars = colnames(ResultsTable)[colnames(ResultsTable) %in% panelDesign$name == F],
-                  variable.name = "Metal",
-                  value.name = "Intensity"
-) %>% acast(.,
-            Mapping + Metal ~ FileNames,
-            fun.aggregate = median,
-            value.var = "Intensity"
-)
+medExprData <- flowSOM.res$map$medianValues[,panelDesign$Ignore == 0]
+medExprData <- t(medExprData)
+colnames(medExprData) <- c(1:ncol(medExprData))
+
+consensusCluster <- pvclust(medExprData, parallel = T)
+sigClusters <- pvpick(consensusCluster)$clusters
+
+sigClusters <- sigClusters[lapply(sigClusters, function(x){
+  mean(cor(medExprData[,x])[upper.tri(cor(medExprData[,x]))])
+  }) > .90]
+
+sigClusters <- c(sigClusters, colnames(medExprData)[which(colnames(medExprData) %in% unlist(sigClusters) == F)])
+
+sigClusters <- data_frame(ConsensusCluster = paste0("Cluster", c(1:length(sigClusters))),
+                          Mapping = sigClusters)
+sigClusters <- unnest(sigClusters)
+sigClusters <- sigClusters %>% mutate(Mapping = as.numeric(Mapping))
+
+ResultsTable <- ResultsTable %>% left_join(sigClusters)
+
+
+nodeExprTable <- ResultsTable %>%
+  group_by_at(vars(FileNames, Mapping)) %>%
+  summarise_at(colnames(ResultsTable)[colnames(ResultsTable) %in% targets$name[targets$Functional == 1 | targets$Lineage == 1]],
+               median) %>%
+  gather(Metal,
+         Intensity,
+         -Mapping, 
+         -FileNames) %>%
+  spread(FileNames,
+         Intensity)
 
 countTable <- ResultsTable[,grep("Mapping|FileNames", colnames(ResultsTable))]
 countTable <- table(countTable$Mapping, countTable$FileNames)
-
 props_table <- t(t(countTable) / colSums(countTable))
 
+consensusNodeExprTable <- ResultsTable %>%
+  group_by_at(vars(FileNames, ConsensusCluster)) %>%
+  summarise_at(colnames(ResultsTable)[colnames(ResultsTable) %in% targets$name[targets$Functional == 1 | targets$Lineage == 1]],
+               median) %>%
+  gather(Metal,
+         Intensity,
+         -ConsensusCluster, 
+         -FileNames) %>%
+  spread(FileNames,
+         Intensity)
+
+consensusNodeMedianTable <- ResultsTable %>%
+  group_by(ConsensusCluster) %>%
+  summarise_at(colnames(ResultsTable)[colnames(ResultsTable) %in% targets$name[targets$Functional == 1 | targets$Lineage == 1]],
+               median) %>%
+  gather(Metal,
+         Intensity,
+         -ConsensusCluster) %>%
+  spread(Metal,
+         Intensity)
+
+consensusCountTable <- ResultsTable[,grep("ConsensusCluster|FileNames", colnames(ResultsTable))]
+consensusCountTable <- table(consensusCountTable$ConsensusCluster, consensusCountTable$FileNames)
+consensus_props_table <- t(t(consensusCountTable) / colSums(consensusCountTable))
+
+# write out results
+ResultsTableFile <- paste(RESULTS_DIR, "FlowSOMResultsTable.txt", sep = "")
 nodeExprTableFile <- paste(RESULTS_DIR, "nodeExpressionFeatureTable.txt", sep = "")
-
-write.table(nodeExprTable, nodeExprTableFile, sep = "\t", quote = F, row.names = T)
-
 nodeAbndncFeatureTableFile <- paste(RESULTS_DIR, "nodeAbundanceFeatureTable.txt", sep = "")
-
-write.table(props_table, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = T)
-
 nodeCountFeatureTableFile <- paste(RESULTS_DIR, "nodeCountFeatureTable.txt", sep = "")
-
-write.table(countTable, nodeCountFeatureTableFile, sep = "\t", quote = F, row.names = T)
-
 nodeMedianFeatureTableFile <- paste(RESULTS_DIR, "nodeMedianFeatureTable.txt", sep = "")
 
+ConsensusClusterNodeExprTableFile <- paste(RESULTS_DIR, "ConsensusClusterNodeExpressionFeatureTable.txt", sep = "")
+ConsensusClusterNodeAbndncFeatureTableFile <- paste(RESULTS_DIR, "ConsensusClusterNodeAbundanceFeatureTable.txt", sep = "")
+ConsensusClusterNodeCountFeatureTableFile <- paste(RESULTS_DIR, "ConsensusClusterNodeCountFeatureTable.txt", sep = "")
+ConsensusClusterNodeMedianFeatureTableFile <- paste(RESULTS_DIR, "ConsensusClusterNodeMedianFeatureTable.txt", sep = "")
+
+write.table(ResultsTable, ResultsTableFile, sep = "\t", quote = F, row.names = F)
+write.table(nodeExprTable, nodeExprTableFile, sep = "\t", quote = F, row.names = T)
+write.table(props_table, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = T)
+write.table(countTable, nodeCountFeatureTableFile, sep = "\t", quote = F, row.names = T)
 write.table(flowSOM.res$map$medianValues, nodeMedianFeatureTableFile, sep = "\t", quote = F, row.names = T)
+
+write.table(consensusNodeExprTable, ConsensusClusterNodeExprTableFile, sep = "\t", quote = F, row.names = T)
+write.table(consensus_props_table, ConsensusClusterNodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = T)
+write.table(consensusCountTable, ConsensusClusterNodeCountFeatureTableFile, sep = "\t", quote = F, row.names = T)
+write.table(consensusNodeMedianTable, ConsensusClusterNodeMedianFeatureTableFile, sep = "\t", quote = F, row.names = T)
 
 workspaceFile <- paste(RESULTS_DIR, "FlowSOMWorkspace.Rdata", sep = "")
 
