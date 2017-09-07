@@ -81,10 +81,10 @@ for (baseline in levels(exprDesign)){
   }
 
 }
-nodeAbndncStatsFile <- paste(RESULTS_DIR, "nodeDifferentialAbundanceTable.txt", sep = "")
+nodeAbndncStatsFile <- paste(RESULTS_DIR, "nodeDifferentialCountTable.txt", sep = "")
 
 write.table(diffAbndncStatsTable, nodeAbndncStatsFile, sep = "\t", quote = F, row.names = F)
 
-workspaceFile <- paste(RESULTS_DIR, "compDiffAbndncWorkspace.Rdata", sep = "")
+workspaceFile <- paste(RESULTS_DIR, "compDiffCountWorkspace.Rdata", sep = "")
 
 save.image(file = workspaceFile)
