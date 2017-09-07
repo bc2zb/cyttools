@@ -176,6 +176,6 @@ PhenoCodesFile <- paste(RESULTS_DIR, "PhenoCodes.txt", sep = "")
 
 write.table(PhenoCodes, PhenoCodesFile, sep = "\t", quote = F, row.names = F)
 
-workspaceFile <- paste(RESULTS_DIR, "BatchFlowTypeDataMergeWorkspace.Rdata", sep = "")
-
-save.image(file = workspaceFile)
+# workspaceFile <- paste(RESULTS_DIR, "BatchFlowTypeDataMergeWorkspace.Rdata", sep = "")
+# 
+# save.image(file = workspaceFile)

@@ -72,6 +72,6 @@ for ( i in 1:length(flowSet.trans)){
   save(ffb, file = batchWorkspaceFile)
 }
 
-workspaceFile <- paste(RESULTS_DIR, "FlowTypeWorkspace.Rdata", sep = "")
-
-save.image(file = workspaceFile)
+# workspaceFile <- paste(RESULTS_DIR, "FlowTypeWorkspace.Rdata", sep = "")
+# 
+# save.image(file = workspaceFile)
