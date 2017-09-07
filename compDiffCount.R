@@ -74,8 +74,8 @@ for (baseline in levels(exprDesign)){
     res <- glmQLFTest(fit, coef = paste0("Cnd.", experimental))
     topTable <- topTags(res, n = Inf)$table %>%
       rownames_to_column("ClusterID") %>%
-      mutate(Condition = rep(experimental, nrow(topTable)),
-                                    Baseline = rep(baseline, nrow(topTable)))
+      mutate(Condition = rep(experimental, nrow(.)),
+                                    Baseline = rep(baseline, nrow(.)))
     diffAbndncStatsTable <- diffAbndncStatsTable %>% bind_rows(topTable)
                 
   }
