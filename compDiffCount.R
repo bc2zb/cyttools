@@ -74,13 +74,18 @@ for (baseline in levels(exprDesign)){
     res <- glmQLFTest(fit, coef = paste0("Cnd.", experimental))
     topTable <- topTags(res, n = Inf)$table %>%
       rownames_to_column("ClusterID") %>%
-      mutate(Condition = rep(experimental, nrow(.)),
-                                    Baseline = rep(baseline, nrow(.)))
+      mutate(Observation = rep("Count", nrow(.)),
+        Condition = rep(experimental, nrow(.)),
+        Baseline = rep(baseline, nrow(.)))
     diffAbndncStatsTable <- diffAbndncStatsTable %>% bind_rows(topTable)
                 
   }
 
 }
+
+diffAbndncStatsTable <- diffAbndncStatsTable %>%
+  select(ClusterID, Observation, Condition, Baseline, logFC, PValue, FDR)
+
 nodeAbndncStatsFile <- paste(RESULTS_DIR, "nodeDifferentialCountTable.txt", sep = "")
 
 write.table(diffAbndncStatsTable, nodeAbndncStatsFile, sep = "\t", quote = F, row.names = F)

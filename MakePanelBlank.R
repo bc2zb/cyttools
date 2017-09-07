@@ -53,7 +53,7 @@ panel$Viability[grep("Pt", panel$desc)] <- 1
 
 panel$descOriginal <- panel$desc
 
-panel$desc <- gsub(".*\\_|-EQBEADS", "", panel$desc)
+panel$desc <- gsub("^[0-9]{2,3}.{1,2}\\_|-EQBEADS", "", panel$desc)
 
 panel$metal <- gsub("Di", "", panel$name)
 panel$mass <- gsub("[A-z]*", "", panel$metal)
@@ -68,6 +68,11 @@ panel$Ignore[which(panel$Viability == 1)] <- 1
 panel$Ignore[which(panel$EventDiscrimination == 1)] <- 1
 
 functionalMarkerIndex <- grep("p", panel$desc)
+panel$Functional[functionalMarkerIndex] <- 1
+
+knownFunctionalMarkers <- c("Tbet", "FOXP3", "IKBA", "GRANZYME_B", "PERFORIN")
+
+panel$Functional[panel$desc %in% knownFunctionalMarkers] <- 1
 
 panel$Lineage[panel$Ignore == 0 & panel$Functional == 0] <- 1
 
