@@ -54,13 +54,14 @@ if(length(unique(targets$TimePoint)) > 1){
 }
 
 if(all(table(targets$SampleID) == 1)){
-  design <- model.matrix(~ 0 + exprDesign)
-}else if(length(unique(targets$Group)) > 1){
-  design <- model.matrix(~ 0 + exprDesign + targets$SampleID + targets$Group)
+  if(length(unique(targets$Group)) <= 1){
+      design <- model.matrix(~ 0 + exprDesign)
+  }else{
+    design <- model.matrix(~targets$Group + exprDesign)
+  }
 }else{
-  design <- model.matrix(~ 0 + exprDesign + targets$SampleID)
+  design <- model.matrix(~targets$SampleID + exprDesign)
 }
-colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
 colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
 
 orderList <- gsub("\\s", ".", targets$FileName)
@@ -73,20 +74,20 @@ propData <- logitTransform(props_table)
 fit <- lmFit(propData, design = design)
 if(checkLmFit(fit, propData)){
   design <- model.matrix(~ 0 + exprDesign + targets$SampleID)
-  
+
   colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
   colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
-  
+
   fit <- lmFit(propData, design = design)
-  
+
   if(checkLmFit(fit, propData)){
     design <- model.matrix(~ 0 + exprDesign)
-    
+
     colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
     colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
-    
+
     fit <- lmFit(propData, design = design)
-    
+
     cat("\n\nWARNING: Limma cannot estimate random effects due to sample size, using simplified model for analysis\n\n")
   }else{
     cat("\n\nWARNING: Limma cannot estimate group effects due to sample size, using simplified model for analysis\n\n")}
@@ -104,12 +105,12 @@ for ( i in 1:nrow(cont.matrix)){
   l <- i + numContrasts - 1
   if ( k <= l){
     for ( j in k:l){
-      cont.matrix[j+1,c(prevNumContrasts:endContrasts)[j - i + 1]] <- -1      
+      cont.matrix[j+1,c(prevNumContrasts:endContrasts)[j - i + 1]] <- -1
     }
   }
   prevNumContrasts <- prevNumContrasts + numContrasts
-  
-}  
+
+}
 cont.matrix[is.na(cont.matrix)] <- 0
 row.names(cont.matrix) <- colnames(design)
 colnames(cont.matrix) <- paste("Contrast", c(1:ncol(cont.matrix)), sep = "")
@@ -125,7 +126,7 @@ for ( i in 1:ncol(cont.matrix)){
   secondCondition <- contMatrixRowIDs$Condition[cont.matrix[,i] == -1]
   firstTimePoint <- contMatrixRowIDs$TimePoint[cont.matrix[,i] == 1]
   secondTimePoint <- contMatrixRowIDs$TimePoint[cont.matrix[,i] == -1]
-  
+
   if(all(unlist(lapply(c(firstTimePoint, secondTimePoint), is.na))) &
      firstCondition != secondCondition){
     validContrastIndex[i] <- T
@@ -158,8 +159,12 @@ if(any(grepl("BatchEffect", humanReadableColNames))){
   cont.matrix <- cont.matrix[,grep("BatchEffect", colnames(cont.matrix), invert = T)]
 }
 
-fit2 <- contrasts.fit(fit, cont.matrix)
-fit2 <- eBayes(fit2)
+if(is.null(dim(cont.matrix))){
+  fit2 <- eBayes(fit)
+}else{
+  fit2 <- contrasts.fit(fit, cont.matrix)
+  fit2 <- eBayes(fit2)
+}
 
 diffAbndncStatsTable <- data.frame()
 
