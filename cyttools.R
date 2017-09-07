@@ -11,6 +11,7 @@ cyttools.R --makeMetaDataBlank DIR OUT
 cyttools.R [--transform=<bool>] --computeNRS DIR PANEL OUT
 cyttools.R [--transform=<bool>] --cluster=<algorithm> DIR PANEL OUT
 cyttools.R --compDiffAbndnc PANEL FEATURETABLE METADATA OUT
+cyttools.R --compDiffCount PANEL FEATURETABLE METADATA OUT
 cyttools.R --compDiffExpr PANEL FEATURETABLE METADATA OUT
 cyttools.R --batchFlowType DIR OUT
 cyttools.R --batchFlowTypeDataMerge DIR PANEL OUT BATCH_DIR
@@ -24,8 +25,9 @@ Options:
 --transform=<true>        [default: TRUE] Transform data using arcsinH and cofactors specified in PANEL
 --computeNRS              Compute non redundancy score for parameters
 --cluster=<algorithm>     [default: FlowSOM] The algorithm to use for clustering.
---compDiffAbndnc          Test for differential abundance
---compDiffExpr            Test for differential expression
+--compDiffAbndnc          Test for differential abundance using logit transformed frequency data and limma
+--compDiffCount           Test for differential counts using edgeR
+--compDiffExpr            Test for differential expression using limma
 --batchFlowType           Run FlowType in batch mode, iterating over all .Rdata files in DIR
 --batchFlowTypeDataMerge  Merge FlowType results from batch mode
 --makeReport              Plot significant results from differential analysis
@@ -81,6 +83,11 @@ if(args$`--version` == T){ # returns version if version is requested
   }else if(args$`--compDiffAbndnc` == T){
     
     COMMAND <- paste("Rscript compDiffAbndnc.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""))
+    system(command = COMMAND)
+  }else if(args$`--compDiffCount` == T){
+    
+    COMMAND <- paste("Rscript compDiffCount.R",
                      paste("'", RESULTS_DIR, "'", sep = ""))
     system(command = COMMAND)
   }else if(args$`--compDiffExpr` == T){
