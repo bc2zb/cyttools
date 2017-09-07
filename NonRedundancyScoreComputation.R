@@ -74,6 +74,6 @@ nrsFile <- paste(RESULTS_DIR, "nrsPanelFile.txt", sep = "")
 
 write.table(targets, file = nrsFile, sep = "\t", quote = F, row.names = F)
 
-workspaceFile <- paste(RESULTS_DIR, "NonRedundancyScoreComputationWorkspace.Rdata", sep = "")
-
-save.image(file = workspaceFile)
+# workspaceFile <- paste(RESULTS_DIR, "NonRedundancyScoreComputationWorkspace.Rdata", sep = "")
+# 
+# save.image(file = workspaceFile)
