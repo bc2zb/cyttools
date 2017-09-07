@@ -46,131 +46,50 @@ targets$TimePoint <- factor(targets$TimePoint, levels = unique(targets$TimePoint
 targets$Condition <- factor(targets$Condition, levels = unique(targets$Condition))
 targets$SampleID <- factor(targets$SampleID, levels = unique(targets$SampleID))
 
-if(length(unique(targets$TimePoint)) > 1){
-  exprDesign <- paste(targets$Condition, targets$TimePoint, sep = "_")
-}else{
-  exprDesign <- targets$Condition
-}
-
-if(all(table(targets$SampleID) == 1)){
-  design <- model.matrix(~ 0 + exprDesign)
-}else if(length(unique(targets$Group)) > 1){
-  design <- model.matrix(~ 0 + exprDesign + targets$SampleID + targets$Group)
-}else{
-  design <- model.matrix(~ 0 + exprDesign + targets$SampleID)
-}
-colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
-colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
+exprDesign <- targets$Condition
 
 orderList <- gsub("\\s", ".", targets$FileName)
 
 nodeExprTable <- read.delim(args$FEATURETABLE, row.names = 1)
-nodeExprTable <- nodeExprTable[,orderVectorByListOfTerms(colnames(nodeExprTable), orderList)]
+nodeExprTable <- nodeExprTable[,orderVectorByListOfTerms(colnames(nodeExprTable), c(colnames(nodeExprTable)[1:2],
+                                                                                    orderList))]
 
+nodeExprTable <- nodeExprTable %>%
+  mutate(RowID = paste(ConsensusCluster, Metal, sep = "_")) %>%
+  select(-ConsensusCluster,
+         -Metal) %>%
+  column_to_rownames("RowID")
 
-fit <- lmFit(nodeExprTable, design = design)
-if(checkLmFit(fit, nodeExprTable)){
-  design <- model.matrix(~ 0 + exprDesign + targets$SampleID)
+diffExprStatsTable <- tibble()
+
+for (baseline in levels(exprDesign)){
   
-  colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
+  tmpExprDesign <- relevel(exprDesign, baseline)
+  design <- model.matrix(~targets$Group + tmpExprDesign)
+  colnames(design) <- gsub("tmpExprDesign", "Cnd.", colnames(design))
   colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
   
   fit <- lmFit(nodeExprTable, design = design)
-  if(checkLmFit(fit, nodeExprTable)){
-    design <- model.matrix(~ 0 + exprDesign)
-    
-    colnames(design) <- gsub("exprDesign", "Cnd", colnames(design))
-    colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
-    
-    fit <- lmFit(nodeExprTable, design = design)
-    
-    cat("\n\nWARNING: Limma cannot estimate random effects due to sample size, using simplified model for analysis\n\n")
-  }else{
-    cat("\n\nWARNING: Limma cannot estimate group effects due to sample size, using simplified model for analysis\n\n")}
-}
-
-# Automate generation of contrast matrix
-cont.matrix <- matrix(nrow = length(colnames(design)), ncol = (length(colnames(design)) - 1)*(length(colnames(design)))/2) # levels X Contrasts
-prevNumContrasts <- 1
-for ( i in 1:nrow(cont.matrix)){
-  numContrasts <- nrow(cont.matrix) - i
-  endContrasts <- prevNumContrasts + numContrasts - 1
-  if (numContrasts > 0){
-    cont.matrix[i,c(prevNumContrasts:endContrasts)] <- 1
-  }
-  k <- i
-  l <- i + numContrasts - 1
-  if ( k <= l){
-    for ( j in k:l){
-      cont.matrix[j+1,c(prevNumContrasts:endContrasts)[j - i + 1]] <- -1      
-    }
-  }
-  prevNumContrasts <- prevNumContrasts + numContrasts
+  res <- eBayes(fit)
   
-}  
-cont.matrix[is.na(cont.matrix)] <- 0
-row.names(cont.matrix) <- colnames(design)
-colnames(cont.matrix) <- paste("Contrast", c(1:ncol(cont.matrix)), sep = "")
-
-# remove comparisons that don't make sense from an experimental design perspective
-contMatrixRowIDs <- colsplit(row.names(cont.matrix), "\\_", c("Condition", "TimePoint"))
-
-validContrastIndex <- vector(length = ncol(cont.matrix))
-humanReadableColNames <- vector(length = ncol(cont.matrix))
-for ( i in 1:ncol(cont.matrix)){
-  contrastColumn <- cont.matrix[,i]
-  firstCondition <- contMatrixRowIDs$Condition[cont.matrix[,i] == 1]
-  secondCondition <- contMatrixRowIDs$Condition[cont.matrix[,i] == -1]
-  firstTimePoint <- contMatrixRowIDs$TimePoint[cont.matrix[,i] == 1]
-  secondTimePoint <- contMatrixRowIDs$TimePoint[cont.matrix[,i] == -1]
+  for(experimental in (levels(tmpExprDesign)[-1])){
+    topTable <- topTable(res, coef = paste0("Cnd.", experimental), number = Inf) %>%
+      rownames_to_column("ClusterID") %>% 
+      separate(ClusterID, c("ClusterID", "Observation"), "_") %>%
+      mutate(Condition = rep(experimental, nrow(.)),
+             Baseline = rep(baseline, nrow(.)))
+    diffExprStatsTable <- diffExprStatsTable %>% bind_rows(topTable)
+    
+  }
   
-  if(all(unlist(lapply(c(firstTimePoint, secondTimePoint), is.na))) &
-     firstCondition != secondCondition){
-    validContrastIndex[i] <- T
-    humanReadableColNames[i] <- paste(firstCondition,
-                                            secondCondition,
-                                            sep = "_vs_")
-  }else if(any(unlist(lapply(c(firstCondition, secondCondition, firstTimePoint, secondTimePoint), is.na)))){
-    validContrastIndex[i] <- F
-  }else if(firstCondition == secondCondition & firstTimePoint != secondTimePoint){
-    validContrastIndex[i] <- T
-    humanReadableColNames[i] <- paste(firstCondition,
-                                      paste(firstTimePoint,
-                                            secondTimePoint,
-                                            sep = "_vs_"),
-                                      sep = ".")
-  }else if(firstCondition != secondCondition & firstTimePoint == secondTimePoint){
-    validContrastIndex[i] <- T
-    humanReadableColNames[i] <- paste(firstTimePoint,
-                                      paste(firstCondition,
-                                            secondCondition,
-                                            sep = "_vs_"),
-                                      sep = ".")
-  }else{validContrastIndex[i] <- F}
 }
 
-cont.matrix.2 <- cont.matrix[,validContrastIndex] %>% as.matrix()
-colnames(cont.matrix) <- humanReadableColNames[validContrastIndex]
-
-if(any(grepl("BatchEffect", humanReadableColNames))){
-  cont.matrix <- cont.matrix[,grep("BatchEffect", colnames(cont.matrix), invert = T)]
-}
-
-fit2 <- contrasts.fit(fit, cont.matrix)
-fit2 <- eBayes(fit2)
-
-diffExprStatsTable <- data.frame()
-
-for ( i in 1:length(colnames(fit2))){
-  nextPart <- topTable(fit2, coef = i, number = Inf)
-  nextPart$Source <- rep(colnames(fit2)[i], nrow(nextPart))
-  nextPart$RowNames <- row.names(nextPart)
-  nextPart <- separate(nextPart,
-                       RowNames,
-                       c("Mapping", "Metal"),
-                       "_")
-  diffExprStatsTable <- rbind(diffExprStatsTable, nextPart)
-}
+diffExprStatsTable <- diffExprStatsTable %>%
+  select(ClusterID, Observation, P.Value, adj.P.Val, Condition, Baseline, logFC) %>%
+  mutate(PValue = P.Value,
+         FDR = adj.P.Val,
+         adj.P.Val = NULL,
+         P.Value = NULL)
 
 nodeExprStatsFile <- paste(RESULTS_DIR, "nodeDifferentialExpressionTable.txt", sep = "")
 
