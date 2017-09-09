@@ -164,6 +164,6 @@ write.table(consensus_props_table, ConsensusClusterNodeAbndncFeatureTableFile, s
 write.table(consensusCountTable, ConsensusClusterNodeCountFeatureTableFile, sep = "\t", quote = F, row.names = T)
 write.table(consensusNodeMedianTable, ConsensusClusterNodeMedianFeatureTableFile, sep = "\t", quote = F, row.names = T)
 
-# workspaceFile <- paste(RESULTS_DIR, "FlowSOMWorkspace.Rdata", sep = "")
-# 
-# save.image(file = workspaceFile)
+workspaceFile <- paste(RESULTS_DIR, "FlowSOMWorkspace.Rdata", sep = "")
+
+save.image(file = workspaceFile)

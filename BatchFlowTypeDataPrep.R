@@ -57,9 +57,26 @@ if(args$transform == T){
 lineage_markers_ord <- targets$name
 lineage_markers_ord <- lineage_markers_ord[lineage_markers_ord %in% targets$name[which(targets$Ignore == 0)]]
 lineage_markers_ord <- lineage_markers_ord[order(targets$NRS[which(targets$name %in% lineage_markers_ord)], decreasing = T)]
-if(length(lineage_markers_ord) > 12){
-  lineage_markers_ord <- lineage_markers_ord[1:12]
+
+PartitionsPerMarker <- 2
+MaxMarkersPerPop <- length(lineage_markers_ord)
+MemLimit <- 16
+MemUse <- 0
+NumMarkers <- 1
+
+while(MemLimit > MemUse){
+  NumMarkers <- NumMarkers + 1
+  MemUse <- calcMemUse(calcNumPops(PartitionsPerMarker, NumMarkers),
+                     NumMarkers,
+                     NumMarkers, 
+                     max(fsApply(flowSet.trans, nrow)),
+                     NumMarkers,
+                     max(PartitionsPerMarker))/10^9
 }
+
+NumMarkers <- NumMarkers - 1
+
+lineage_markers_ord <- lineage_markers_ord[1:NumMarkers]
 
 colsToUse <- which(targets$name %in% lineage_markers_ord == T)
 
