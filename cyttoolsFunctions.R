@@ -1,6 +1,6 @@
-libraryList <- c("tidyverse", "reshape2","parallel", "devtools", "stringr", "pvclust",
+libraryList <- c("reshape2","parallel", "devtools", "stringr", "pvclust",
                  "flowCore", "limma", "edgeR", "FlowSOM", "flowType",
-                 "cytofCore")
+                 "cytofCore", "tidyverse")
 
 lapply(libraryList, require, quietly = T, character.only = TRUE)
 

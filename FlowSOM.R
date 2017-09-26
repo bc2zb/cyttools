@@ -141,6 +141,22 @@ consensusCountTable <- ResultsTable[,grep("ConsensusCluster|FileNames", colnames
 consensusCountTable <- table(consensusCountTable$ConsensusCluster, consensusCountTable$FileNames)
 consensus_props_table <- t(t(consensusCountTable) / colSums(consensusCountTable))
 
+ResultsTable <- ResultsTable %>% left_join(flowSOM.res$MST$l %>%
+                                             as.data.frame() %>%
+                                             setNames(c("cyttools_dim_x", "cyttools_dim_y")) %>%
+                                             rownames_to_column("Mapping") %>%
+                                             mutate(Mapping = as.numeric(Mapping)))
+
+for( files in file){
+  rawFCS <- read.FCS(files, transformation = F)
+  clusterData <- ResultsTable %>%
+    filter(FileNames == files) %>%
+    select(Mapping, DistToNode, cyttools_dim_x, cyttools_dim_y)
+  clusterFCS <- flowCore::cbind2(rawFCS, as.matrix(clusterData))
+  out.fcs.file <- paste0(RESULTS_DIR, "clustered", basename(files))
+  write.FCS(clusterFCS, out.fcs.file)
+}
+
 # write out results
 ResultsTableFile <- paste(RESULTS_DIR, "FlowSOMResultsTable.txt", sep = "")
 nodeExprTableFile <- paste(RESULTS_DIR, "nodeExpressionFeatureTable.txt", sep = "")
