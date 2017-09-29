@@ -90,6 +90,34 @@ nodeAbndncStatsFile <- paste(RESULTS_DIR, "nodeDifferentialCountTable.txt", sep 
 
 write.table(diffAbndncStatsTable, nodeAbndncStatsFile, sep = "\t", quote = F, row.names = F)
 
+dir.create(paste0(RESULTS_DIR, "ANALYZED_FCS/"),
+           showWarnings = F)
+
+dir <-  dirname(args$FEATURETABLE)
+file <- list.files(dir ,pattern='.fcs$', full=TRUE, recursive = T) # captures all FCS files in the directory
+
+for( files in file){
+  rawFCS <- read.FCS(files, transformation = F)
+  statData <- exprs(rawFCS) %>%
+    as.data.frame() %>% 
+    select(ConsensusCluster:cyttools_dim_y) %>%
+    left_join(diffAbndncStatsTable %>% 
+                mutate(FDR_ID = paste(Observation, Condition, Baseline, sep = "_")) %>% 
+                select(ClusterID, FDR_ID, FDR) %>%
+                mutate(FDR = -log10(FDR)) %>%
+                spread(FDR_ID,
+                       FDR) %>% 
+                mutate(ConsensusCluster = as.numeric(gsub("Cluster", "", ClusterID))) %>%
+                select(-ClusterID))
+  
+  clusterFCS <- flowCore::cbind2(rawFCS, as.matrix(statData %>% select(-(ConsensusCluster:cyttools_dim_y))))
+  out.fcs.file <- paste0(RESULTS_DIR, "ANALYZED_FCS/analyzed_", basename(files))
+  write.FCS(clusterFCS, out.fcs.file)
+}
+
+
+
+
 # workspaceFile <- paste(RESULTS_DIR, "compDiffCountWorkspace.Rdata", sep = "")
 # 
 # save.image(file = workspaceFile)
