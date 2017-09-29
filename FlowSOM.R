@@ -146,14 +146,16 @@ ResultsTable <- ResultsTable %>% left_join(flowSOM.res$MST$l %>%
                                              setNames(c("cyttools_dim_x", "cyttools_dim_y")) %>%
                                              rownames_to_column("Mapping") %>%
                                              mutate(Mapping = as.numeric(Mapping)))
-
+dir.create(paste0(RESULTS_DIR, "CLUSTERED_FCS/"),
+           showWarnings = F)
 for( files in file){
   rawFCS <- read.FCS(files, transformation = F)
   clusterData <- ResultsTable %>%
     filter(FileNames == files) %>%
-    select(Mapping, DistToNode, cyttools_dim_x, cyttools_dim_y)
+    select(ConsensusCluster, Mapping, DistToNode, cyttools_dim_x, cyttools_dim_y) %>%
+    mutate(ConsensusCluster = as.numeric(gsub("Cluster", "", ConsensusCluster)))
   clusterFCS <- flowCore::cbind2(rawFCS, as.matrix(clusterData))
-  out.fcs.file <- paste0(RESULTS_DIR, "clustered", basename(files))
+  out.fcs.file <- paste0(RESULTS_DIR, "CLUSTERED_FCS/clustered_", basename(files))
   write.FCS(clusterFCS, out.fcs.file)
 }
 
