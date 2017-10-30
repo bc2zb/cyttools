@@ -32,13 +32,15 @@ source("cyttoolsFunctions.R")
 dir <- args$DIR # grabs directory from initial cyttools call
 file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
 
-md <- data.frame(FileName = gsub(paste(args$DIR, "/", sep = "|"), "", file))
-md <- data.frame(FileName = md$FileName,
-                 SampleID = vector(length = length(md$FileName)),
-                 Group = vector(length = length(md$FileName)),
-                 Condition = vector(length = length(md$FileName)),
-                 TimePoint = vector(length = length(md$FileName)))
-
+md <- file %>% 
+  as.data.frame() %>%
+  setNames(c("FileName")) %>%
+  mutate(SampleID = vector(length = length(md$FileName)),
+         Group = vector(length = length(md$FileName)),
+         Condition = vector(length = length(md$FileName)),
+         TimePoint = vector(length = length(md$FileName)))
+  
+  
 RESULTS_DIR <- args$OUT      
 mdFile <- paste(RESULTS_DIR, "MetaDataFile.txt", sep = "")
 
