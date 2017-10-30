@@ -47,8 +47,6 @@ targets$TimePoint <- factor(targets$TimePoint, levels = unique(targets$TimePoint
 targets$Condition <- factor(targets$Condition, levels = unique(targets$Condition))
 targets$SampleID <- factor(targets$SampleID, levels = unique(targets$SampleID))
 
-exprDesign <- targets$Condition
-
 orderList <- gsub("\\s", ".", targets$FileName)
 
 props_table <- read.delim(args$FEATURETABLE, row.names = 1)
@@ -58,12 +56,14 @@ propData <- DGEList(props_table[(props_table %>% apply(1, max)) > 100,],
                     lib.size = colSums(props_table))
 
 
+exprDesign <- targets$Condition
+
 diffAbndncStatsTable <- tibble()
 
 for (baseline in levels(exprDesign)){
   
   tmpExprDesign <- relevel(exprDesign, baseline)
-  design <- model.matrix(~targets$Group + tmpExprDesign)
+  design <- model.matrix(~targets$SampleID + tmpExprDesign)
   colnames(design) <- gsub("tmpExprDesign", "Cnd.", colnames(design))
   colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
 
