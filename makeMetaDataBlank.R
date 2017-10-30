@@ -35,10 +35,10 @@ file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in 
 md <- file %>% 
   as.data.frame() %>%
   setNames(c("FileName")) %>%
-  mutate(SampleID = vector(length = length(md$FileName)),
-         Group = vector(length = length(md$FileName)),
-         Condition = vector(length = length(md$FileName)),
-         TimePoint = vector(length = length(md$FileName)))
+  mutate(SampleID = vector(length = length(FileName)),
+         Group = vector(length = length(FileName)),
+         Condition = vector(length = length(FileName)),
+         TimePoint = vector(length = length(FileName)))
   
   
 RESULTS_DIR <- args$OUT      
