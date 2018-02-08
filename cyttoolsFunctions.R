@@ -1,5 +1,5 @@
 libraryList <- c("reshape2","parallel", "devtools", "stringr", "pvclust",
-                 "flowCore", "limma", "edgeR", "FlowSOM", "flowType",
+                 "flowCore", "limma", "edgeR", "FlowSOM", "flowType", "ncdfFlow",
                  "cytofCore", "tidyverse")
 
 lapply(libraryList, require, quietly = T, character.only = TRUE)
@@ -43,7 +43,7 @@ read.flowSet.transVS <- function(targets, file){
   channels <- as.character(targets$name[parameterIndex])
   cofactors <- targets$TransformCofactor[parameterIndex]
 
-  flowSet <- read.flowSet(file, transformation = F) # reads in files as flowSet, required for flowType
+  flowSet <- read.ncdfFlowSet(file) # reads in files as flowSet, required for flowType
 
   flowSet.trans <- transFlowVS(flowSet,
                                channels,

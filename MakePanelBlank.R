@@ -42,9 +42,10 @@ for ( i in c((ncol(panel)+1):length(panelColnames))){
 }
 
 colnames(panelBlank) <- panelColnames
-panelBlank$TransformCofactor <- rep(5, nrow(panelBlank))
+panelBlank$TransformCofactor <- rep(0.25, nrow(panelBlank))
 
 panel <- panelBlank
+panel$desc <- gsub("eq_beads", "EQBEADS", panel$desc)
 
 panel$EQBEADS[grep("EQBEADS", panel$desc)] <- 1
 panel$Barcode[grep("Pd", panel$desc)] <- 1
@@ -67,7 +68,7 @@ panel$Ignore[is.na(panel$desc)] <- 1
 panel$Ignore[which(panel$Viability == 1)] <- 1
 panel$Ignore[which(panel$EventDiscrimination == 1)] <- 1
 
-functionalMarkerIndex <- grep("p", panel$desc)
+functionalMarkerIndex <- grep("^p|casp", panel$desc)
 panel$Functional[functionalMarkerIndex] <- 1
 
 knownFunctionalMarkers <- c("Tbet", "FOXP3", "IKBA", "GRANZYME_B", "PERFORIN")
