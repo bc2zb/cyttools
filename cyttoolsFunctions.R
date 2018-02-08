@@ -43,7 +43,7 @@ read.flowSet.transVS <- function(targets, file){
   channels <- as.character(targets$name[parameterIndex])
   cofactors <- targets$TransformCofactor[parameterIndex]
 
-  flowSet <- read.ncdfFlowSet(file) # reads in files as flowSet, required for flowType
+  flowSet <- as.flowSet(read.ncdfFlowSet(file)) # reads in files as flowSet, required for flowType
 
   flowSet.trans <- transFlowVS(flowSet,
                                channels,
