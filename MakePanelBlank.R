@@ -32,7 +32,7 @@ panelColnames <- c("name", "desc", "range", "minRange", "maxRange", "TransformCo
 
 dir <- args$DIR # grabs directory from initial cyttools call
 file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
-flowSet <- read.flowSet(file, transformation = F) # reads in files as flowSet, required for flowType
+flowSet <- read.ncdfFlowSet(file) # reads in files as flowSet, required for flowType
 
 panel <- as.data.frame(pData(parameters(flowSet[[1]])))
 panelBlank <- panel
