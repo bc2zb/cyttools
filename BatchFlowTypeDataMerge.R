@@ -176,6 +176,19 @@ PhenoCodesFile <- paste(RESULTS_DIR, "PhenoCodes.txt", sep = "")
 
 write.table(PhenoCodes, PhenoCodesFile, sep = "\t", quote = F, row.names = F)
 
+
+dir.create(paste0(RESULTS_DIR, "PHENOTYPED_FCS/"),
+           showWarnings = F)
+for( files in file){
+  rawFCS <- read.FCS(files, transformation = F)
+  clusterData <- nodeExprTable %>%
+    filter(FileNames == basename(files)) %>%
+    select(Mapping)
+  clusterFCS <- flowCore::cbind2(rawFCS, as.matrix(clusterData))
+  out.fcs.file <- paste0(RESULTS_DIR, "PHENOTYPED_FCS/phenotyped_", basename(files))
+  write.FCS(clusterFCS, out.fcs.file)
+}
+
 # workspaceFile <- paste(RESULTS_DIR, "BatchFlowTypeDataMergeWorkspace.Rdata", sep = "")
 # 
 # save.image(file = workspaceFile)
