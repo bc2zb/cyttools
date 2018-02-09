@@ -16,21 +16,23 @@ cyttools.R --compDiffExpr PANEL FEATURETABLE METADATA OUT
 cyttools.R --batchFlowType DIR OUT
 cyttools.R --batchFlowTypeDataMerge DIR PANEL OUT BATCH_DIR
 cyttools.R --makeReport DIR CLUSTERDIR DIFFDIR PANEL METADATA OUT
+cyttools.R --phenoConsensusClustering CLUSTERDIR PHENODIR PHENOCODES OUT
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
---version                 Show the current version.
---makePanelBlank          Produce a panel design file based on FCS files in DIR
---makeMetaDataBlank       Produce a meta data file based on FCS files in DIR
---transform=<true>        [default: TRUE] Transform data using arcsinH and cofactors specified in PANEL
---computeNRS              Compute non redundancy score for parameters
---cluster=<algorithm>     [default: FlowSOM] The algorithm to use for clustering.
---compDiffAbndnc          Test for differential abundance using logit transformed frequency data and limma
---compDiffCount           Test for differential counts using edgeR
---compDiffExpr            Test for differential expression using limma
---batchFlowType           Run FlowType in batch mode, iterating over all .Rdata files in DIR
---batchFlowTypeDataMerge  Merge FlowType results from batch mode
---makeReport              Plot significant results from differential analysis
+--version                  Show the current version.
+--makePanelBlank           Produce a panel design file based on FCS files in DIR
+--makeMetaDataBlank        Produce a meta data file based on FCS files in DIR
+--transform=<true>         [default: TRUE] Transform data using arcsinH and cofactors specified in PANEL
+--computeNRS               Compute non redundancy score for parameters
+--cluster=<algorithm>      [default: FlowSOM] The algorithm to use for clustering.
+--compDiffAbndnc           Test for differential abundance using logit transformed frequency data and limma
+--compDiffCount            Test for differential counts using edgeR
+--compDiffExpr             Test for differential expression using limma
+--batchFlowType            Run FlowType in batch mode, iterating over all .Rdata files in DIR
+--batchFlowTypeDataMerge   Merge FlowType results from batch mode
+--makeReport               Plot significant results from differential analysis
+--phenoConsensusClustering Consensus cluster gridpoints from SOM using phenotypes from FlowType
 
 Arguments:
 
@@ -41,7 +43,9 @@ METADATA      Provide a meta data file, use --makeMetaDataBlank to generate and 
 FEATURETABLE  Provide a expression or abundance feature table, these are outputs of --cluster command
 BATCHDIR      Provide a directory of BATCH results files
 CLUSTERDIR    Provide a directory of clustering results files
+PHENODIR      Provide a directory of phenotyping results files
 DIFFDIR       Provide a directory of differential results files
+PHENOCODES    Provide phenocodes file, use --flowType to generate
 
 " -> doc
 
@@ -98,6 +102,11 @@ if(args$`--version` == T){ # returns version if version is requested
   }else if(args$`--makeReport` == T){
     
     COMMAND <- paste("Rscript makeReport.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""))
+    system(command = COMMAND)
+  }else if(args$`--phenoConsensusClustering` == T){
+    
+    COMMAND <- paste("Rscript phenotype_gridpoints.R",
                      paste("'", RESULTS_DIR, "'", sep = ""))
     system(command = COMMAND)
   }else if(args$`--batchFlowType` == T){
