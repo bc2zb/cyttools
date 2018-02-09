@@ -185,6 +185,7 @@ for( files in file){
     filter(FileNames == basename(files)) %>%
     select(Mapping)
   clusterFCS <- flowCore::cbind2(rawFCS, as.matrix(clusterData))
+  row.names(pData(parameters(clusterFCS))) <- paste0("$P", c(1:nrow(pData(parameters(clusterFCS)))))
   out.fcs.file <- paste0(RESULTS_DIR, "PHENOTYPED_FCS/phenotyped_", basename(files))
   write.FCS(clusterFCS, out.fcs.file)
 }

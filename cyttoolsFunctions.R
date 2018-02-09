@@ -38,13 +38,18 @@ NRS <- function(x, ncomp = 3){
   return(score)
 }
 
-read.flowSet.transVS <- function(targets, file){
+read.flowSet.transVS <- function(targets, file, ncdf = TRUE){
+  
   parameterIndex <- which(targets$Lineage == 1 | targets$Functional == 1)
   channels <- as.character(targets$name[parameterIndex])
   cofactors <- targets$TransformCofactor[parameterIndex]
 
-  flowSet <- as.flowSet(read.ncdfFlowSet(file)) # reads in files as flowSet, required for flowType
-
+  if(ncdf == T){
+    flowSet <- as.flowSet(read.ncdfFlowSet(file)) # reads in files as flowSet, required for flowType
+  }else if(ncdf == F){
+    flowSet <- read.flowSet(file, transformation = F) # reads in files as flowSet, required for flowType
+  }
+  
   flowSet.trans <- transFlowVS(flowSet,
                                channels,
                                cofactors)

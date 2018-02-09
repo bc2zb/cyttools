@@ -112,6 +112,7 @@ for( files in file){
     filter(FileNames == files) %>%
     select(Mapping, DistToNode, cyttools_dim_x, cyttools_dim_y)
   clusterFCS <- flowCore::cbind2(rawFCS, as.matrix(clusterData))
+  row.names(pData(parameters(clusterFCS))) <- paste0("$P", c(1:nrow(pData(parameters(clusterFCS)))))
   out.fcs.file <- paste0(RESULTS_DIR, "CLUSTERED_FCS/clustered_", basename(files))
   write.FCS(clusterFCS, out.fcs.file)
 }
