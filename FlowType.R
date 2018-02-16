@@ -1,4 +1,4 @@
-#!/usr/bin/env Rscript
+ #!/usr/bin/env Rscript
 
 require(docopt)
 require(methods)
@@ -34,7 +34,7 @@ dir <- args$DIR # grabs directory from initial cyttools call
 file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
 
 targets <- read.delim(args$PANEL)
-colsToCheck <- c("Ignore", "TransformCofactor", "Lineage", "Functional", "NRS")
+colsToCheck <- c("Ignore", "TransformCofactor", "Lineage", "Functional", "NRS", "PartitionsPerMarker")
 if(checkDesignCols(targets, colsToCheck)){
   missingCols <- colsToCheck[which(colsToCheck %in% colnames(targets) == F)]
   cat("\n\nERROR: PANEL file does not include required columns.
@@ -53,90 +53,47 @@ if(args$transform == T){
   flowSet.trans <- read.flowSet(file)
 }
 
-# order the markers using NRS, dropping markers set to "1" in Ignore column of panel design
-lineage_markers_ord <- targets$name
-lineage_markers_ord <- lineage_markers_ord[lineage_markers_ord %in% targets$name[which(targets$Ignore == 0)]]
-lineage_markers_ord <- lineage_markers_ord[order(targets$NRS[which(targets$name %in% lineage_markers_ord)], decreasing = T)]
-if(length(lineage_markers_ord) > 12){
-  lineage_markers_ord <- lineage_markers_ord[1:12]
+
+colsToUse <- targets$name[targets$Lineage == 1 & targets$Ignore == 0]
+
+if(length(colsToUse) %% 2  == 1){
+  batches <- c(1, seq(4, length(colsToUse), by = 2))
+}else{
+  batches <- seq(1, length(colsToUse), by = 2)
 }
 
-colsToUse <- which(targets$name %in% lineage_markers_ord == T)
 
-ResList <- fsApply(flowSet.trans,
-                   'flowType',
-                   PropMarkers = colsToUse,
-                   MFIMarkers = colsToUse,
-                   MarkerNames = targets$desc[colsToUse],
-                   MemLimit = 15)
+flowTypeResults <- lapply(seq_along(flowSet.trans), function(y){
+  PartitionsList <- lapply(seq_along(batches), function(x){
+    start <- batches[x]
+    if(is.na(batches[x+1])){
+      end <- length(colsToUse)
+    }else{
+      end <- batches[x+1]-1
+    }
+    test <- flowType(flowSet.trans[[y]],
+            PropMarkers = colsToUse[start:end],
+            MFIMarkers = colsToUse[start:end],
+            Methods = "kmeans",
+            PartitionsPerMarker = partitionsPerMarker[start:end],
+            MarkerNames = targets$desc[colsToUse[start:end]])
+    return(test@Partitions)
+  })
+  PartitionsList %>%
+    do.call(cbind, .) %>%
+  return(.)
+})
 
-panelDesign <- targets
+names(flowTypeResults) <- file
 
-phenotype.names=unlist(lapply(ResList[[1]]@PhenoCodes,function(x){
-  return(decodePhenotype(x,
-                         as.character(targets$desc[colsToUse]),
-                         ResList[[1]]@PartitionsPerMarker))}))
-names(ResList[[1]]@PhenoCodes)=phenotype.names
-
-nodeExprTable <- lapply(ResList, function(x){return(apply(x@Partitions, 1, paste, collapse =""))})
-
-allExprData <- fsApply(flowSet.trans, function(x){return(x)}, use.exprs = T)
-
-nodeMappings <- unlist(nodeExprTable) %>% data.frame(CellId = names(.), Mapping = .)
-
-nodeExprTable <- cbind(allExprData, nodeMappings)
-
-nodeExprTable$NodeNames <- recoderFunc(nodeExprTable$Mapping,
-                                       ResList[[1]]@PhenoCodes,
-                                       names(ResList[[1]]@PhenoCodes))
-
-nodeExprTable$FileNames <- gsub(".fcs[0-9]*", ".fcs", nodeExprTable$CellId)
-
-ResultsTableFile <- paste(RESULTS_DIR, "FlowTypeResultsTable.txt", sep = "")
-
-write.table(nodeExprTable, ResultsTableFile, sep = "\t", quote = F, row.names = F)
-
-subPopsExprTable <- matrix(ncol = length(ResList))
-for ( i in 1:length(ResList[[1]]@PhenoCodes)){
-  subPopCode <- gsub("0", ".", ResList[[1]]@PhenoCodes[i])
-  subPopData <- nodeExprTable[grep(subPopCode, nodeExprTable$Mapping),]
-  subPopExprTable <- melt(subPopData,
-                          measure.vars = colnames(subPopData)[colnames(subPopData) %in% panelDesign$name[panelDesign$Ignore == 0] == T],
-                          id.vars = colnames(subPopData)[colnames(subPopData) %in% panelDesign$name == F],
-                          variable.name = "Metal",
-                          value.name = "Intensity"
-  )
-  subPopExprTable$Mapping <- rep(gsub("\\.", "0", subPopCode), nrow(subPopExprTable))
-  subPopNodeExprTable <- acast(subPopExprTable,
-                               Mapping + Metal ~ FileNames,
-                               fun.aggregate = median,
-                               value.var = "Intensity" 
-  )
-  subPopsExprTable <- rbind(subPopsExprTable, subPopNodeExprTable)
+dir.create(paste0(RESULTS_DIR, "PHENOTYPED_FCS/"),
+           showWarnings = F)
+for( files in file){
+  rawFCS <- read.FCS(files, transformation = F)
+  phenotype_data <- flowTypeResults[[files]]
+  colnames(phenotype_data) <- paste0("Phenotype_", targets$desc[targets$name %in% colsToUse])
+  clusterFCS <- flowCore::cbind2(rawFCS, phenotype_data)
+  row.names(pData(parameters(clusterFCS))) <- paste0("$P", c(1:nrow(pData(parameters(clusterFCS)))))
+  out.fcs.file <- paste0(RESULTS_DIR, "PHENOTYPED_FCS/phenotyped_", basename(files))
+  write.FCS(clusterFCS, out.fcs.file)
 }
-
-nodeExprTableFile <- paste(RESULTS_DIR, "nodeExpressionFeatureTable.txt", sep = "")
-
-write.table(subPopsExprTable, nodeExprTableFile, sep = "\t", quote = F, row.names = T)
-
-all.proportions <- matrix(0,length(ResList[[1]]@CellFreqs),length(ResList))
-for (i in 1:length(ResList))
-  all.proportions[,i] = ResList[[i]]@CellFreqs / ResList[[i]]@CellFreqs[1]
-
-colnames(all.proportions) <- names(ResList)
-row.names(all.proportions) <- phenotype.names
-
-nodeAbndncFeatureTableFile <- paste(RESULTS_DIR, "nodeAbundanceFeatureTable.txt", sep = "")
-
-write.table(all.proportions, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = T)
-
-PhenoCodes <- data.frame(PhenoCodes = ResList[[1]]@PhenoCodes,
-                         Names = names(ResList[[1]]@PhenoCodes))
-
-PhenoCodesFile <- paste(RESULTS_DIR, "PhenoCodes.txt", sep = "")
-
-write.table(PhenoCodes, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = F)
-
-workspaceFile <- paste(RESULTS_DIR, "FlowTypeWorkspace.Rdata", sep = "")
-
-save.image(file = workspaceFile)

@@ -77,6 +77,7 @@ panel$Functional[panel$desc %in% knownFunctionalMarkers] <- 1
 
 panel$Lineage[panel$Ignore == 0 & panel$Functional == 0] <- 1
 
+panel$PartitionsPerMarker <- rep(NA, nrow(panel))
 
 RESULTS_DIR <- args$OUT
 panelFile <- paste(RESULTS_DIR, "panelFile.txt", sep = "")
