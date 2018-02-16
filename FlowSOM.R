@@ -109,7 +109,7 @@ dir.create(paste0(RESULTS_DIR, "CLUSTERED_FCS/"),
 for( files in file){
   rawFCS <- read.FCS(files, transformation = F)
   clusterData <- ResultsTable %>%
-    filter(FileNames == files) %>%
+    dplyr::filter(FileNames == files) %>%
     select(Mapping, DistToNode, cyttools_dim_x, cyttools_dim_y)
   clusterFCS <- flowCore::cbind2(rawFCS, as.matrix(clusterData))
   row.names(pData(parameters(clusterFCS))) <- paste0("$P", c(1:nrow(pData(parameters(clusterFCS)))))
