@@ -61,82 +61,95 @@ if(args$transform == T){
 # read in phenotyped FCS files
 pheno_dir <- args$PHENODIR # grabs directory from initial cyttools call
 
-phenocodes <- read_tsv(args$PHENOCODES)
-flowTypeResults <- read_tsv(paste0(args$OUT, "BatchFlowTypeDataMergeResultsTable.txt"))
-flowTypeCounts <- read.delim(paste0(args$OUT, "nodeCountFeatureTable.txt"), row.names = 1)
-pop_median_counts <- apply(flowTypeCounts, 1, median)
+pheno_file <- list.files(pheno_dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
 
-flowTypeCounts <- flowTypeCounts[pop_median_counts > 1000,]
-
-nodeExprTable <- cluster.flowSet.trans %>%
-  fsApply(function(x){return(as.data.frame(exprs(x)))}, simplify = F) %>%
-  bind_rows(.id = "FileNames") %>%
-  group_by_at(vars(FileNames, Mapping)) %>%
-  summarise_at(colnames(.)[colnames(.) %in% targets$name[targets$Functional == 1 | targets$Lineage == 1]],
-               median) %>%
-  gather(Metal,
-         Intensity,
-         -Mapping, 
-         -FileNames) %>%
-  spread(FileNames,
-         Intensity) %>%
-  left_join(targets, by = c("Metal" = "name"))
+if(args$transform == T){
+  pheno.flowSet.trans <- read.flowSet.transVS(targets, pheno_file)
+}else{
+  pheno.flowSet.trans <- read.flowSet(pheno_file)
+}
 
 mappings <- cluster.flowSet.trans %>%
   fsApply(function(x){return(as.data.frame(exprs(x)))}, simplify = F) %>%
-  bind_rows(.id = "FileNames") %>% 
+  bind_rows(.id = "FileNames") %>%
   select(Mapping) %>%
-  bind_cols(flowTypeResults %>%
-              select(Mapping, NodeNames) %>%
-              setNames(c("PhenoCodes", "Names")))
+  bind_cols(pheno.flowSet.trans %>%
+              fsApply(function(x){return(as.data.frame(exprs(x)))}, simplify = F) %>%
+              bind_rows(.id = "FileNames") %>%
+              select(contains("Phenotype_")))
 
-map_counts <- mappings %>%
-  group_by(Mapping, PhenoCodes, Names) %>%
-  summarise(n())
+map_counts <- mappings %>% 
+  gather(PhenoCodes,
+         Phenotype,
+         -Mapping) %>% 
+  group_by(Mapping, PhenoCodes, factor(Phenotype)) %>%
+  tally()
 
-map_counts %>%
-  filter(Mapping == 1) %>%
-  ungroup() %>%
-  mutate(PhenoCodes = factor(PhenoCodes))
+diff_counts <- map_counts %>%
+  spread(`factor(Phenotype)`,
+         `n`,
+         fill = NA) %>%
+  mutate(`1` = if_else(is.na(`1`),
+                       as.double(0),
+                       as.double(`1`)),
+         `2` = if_else(is.na(`2`),
+                       as.double(0),
+                       as.double(`2`)),
+          diff = if_else(is.na(`3`),
+                        (`2` - `1`)/(`2` + `1`),
+                        (`3` - (`2` + `1`))/(`3` + `2` + `1`)))
 
-map_counts <- map_counts %>%
-  mutate(sepCodes = gsub("(.)", "\\1 ", PhenoCodes),
-         sepCodes = trimws(sepCodes)) %>%
-  separate(sepCodes,
-           str_split(trimws(gsub("\\+|\\-", " ", map_counts$Names[1])), " ", simplify = T),
-           " ")
-
-map_counts <- map_counts %>%
-  group_by(Mapping) %>%
-  select(-PhenoCodes,
-         -Names,
-         -`n()`) %>%
-  gather(Marker,
-         PhenoCode,
-         -Mapping) %>%
-  group_by(Mapping, Marker, PhenoCode) %>%
-  summarise(n()) %>%
-  spread(PhenoCode,
-         `n()`,
-         fill = 0) %>%
-  mutate(diff = (`2` - `1`)/(`2` + `1`))
-
-reduced_phenocodes <- map_counts %>%
-  mutate(MarkerCode = case_when(diff >= 0.75 ~ 2,
-                                diff <= -0.75 ~ 1,
-                                diff < 0.75 & diff > -0.75 ~ 0)) %>%
-  select(Mapping, Marker, MarkerCode) %>%
+reduced_phenocodes <- diff_counts %>%
+  mutate(MarkerCode = case_when(diff < 0.75 & diff > -0.75 ~ 0,
+                                is.na(`3`) & diff >= 0.75 ~ 2,
+                                is.na(`3`) & diff <= -0.75 ~ 1,
+                                is.na(`3`) == F & diff >= 0.75 ~ 3,
+                                is.na(`3`) == F & diff <= -0.75 & ((`2` - (`3` + `1`))/(`3` + `2` + `1`)) >= -0.75 ~ 2,
+                                is.na(`3`) == F & diff <= -0.75 & ((`1` - (`3` + `2`))/(`3` + `2` + `1`)) >= -0.75 ~ 1)) %>%
+  select(Mapping, PhenoCodes, MarkerCode) %>%
   mutate(MarkerCode = factor(MarkerCode)) %>%
-  spread(Marker, MarkerCode) %>%
-  select(CD41,CD117,CD13,CD123,CD45RA,CD45,CD36,CD235a,CD61,CD34,CD9,CD38,CD71,Mapping)
+  spread(PhenoCodes, MarkerCode) %>%
+  select(starts_with("Phenotype_"),
+         Mapping)
 
-reduced_phenocodes$PhenoCodes <- apply(reduced_phenocodes[1:13], 1, paste, collapse = "")
+medClusterCount <- cluster.flowSet.trans %>%
+  fsApply(function(x){return(as.data.frame(exprs(x)))}, simplify = F) %>%
+  bind_rows(.id = "FileNames") %>%
+  group_by(Mapping, FileNames) %>%
+  summarise(n()) %>%
+  mutate(rare_pop_score = `n()`/100) %>%
+  ungroup() %>%
+  group_by(Mapping) %>%
+  summarise(max_rare_pop = max(rare_pop_score),
+            med_rare_pop = median(rare_pop_score),
+            min_rare_pop = min(rare_pop_score))
 
-reduced_phenocodes <- reduced_phenocodes %>% 
-  left_join(phenocodes)
+### MERGING FUNCTION GOES HERE?
 
+phenocode_matrix <- lapply(seq_along(colnames(reduced_phenocodes %>%
+                                                ungroup() %>%
+                                                select(-Mapping))),
+                   function(x){
+                     marker <- gsub("Phenotype_", "", colnames(reduced_phenocodes)[x])
+                     phenocode_vector <- reduced_phenocodes[,x]
+                     if(max(as.numeric(phenocode_vector[[1]])) == 3){
+                       phenocode_vector[phenocode_vector == 3] <- paste0(marker, "hi")
+                       phenocode_vector[phenocode_vector == 2] <- paste0(marker, "lo")
+                       phenocode_vector[phenocode_vector == 1] <- paste0(marker, "-")
+                       phenocode_vector[phenocode_vector == 0] <- ""
+                     }else{
+                       phenocode_vector[phenocode_vector == 2] <- paste0(marker, "+")
+                       phenocode_vector[phenocode_vector == 1] <- paste0(marker, "-")
+                       phenocode_vector[phenocode_vector == 0] <- ""
+                     }
+                     return(phenocode_vector)
+                             }) %>%
+  bind_cols()
 
-
+annotated_mappings <- apply(phenocode_matrix, 1, paste, collapse = " ") %>%
+  trimws() %>%
+  gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", ., perl = T)
+  
 ##########################################################################
 ############################     End code     ############################
 ##########################################################################
