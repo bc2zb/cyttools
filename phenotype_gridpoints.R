@@ -124,7 +124,7 @@ medClusterCount <- cluster.flowSet.trans %>%
             med_rare_pop = median(rare_pop_score),
             min_rare_pop = min(rare_pop_score))
 
-### MERGING FUNCTION GOES HERE?
+### MERGING FUNCTION GOES HERE? Hierarchical based perhaps? MST coordinates could assist? HAMMING DISTANCE?
 
 phenocode_matrix <- lapply(seq_along(colnames(reduced_phenocodes %>%
                                                 ungroup() %>%
@@ -146,9 +146,24 @@ phenocode_matrix <- lapply(seq_along(colnames(reduced_phenocodes %>%
                              }) %>%
   bind_cols()
 
-annotated_mappings <- apply(phenocode_matrix, 1, paste, collapse = " ") %>%
-  trimws() %>%
-  gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", ., perl = T)
+lineage_lists <- phenocode_matrix %>%
+  apply(1, function(x){
+    reduced_x <- x[grep("^$", x, invert = T)]
+    return(lapply(seq_along(1:length(reduced_x)), function(y){
+      combn(reduced_x, y, simplify = T) %>%
+        apply(2, paste, collapse = " ") %>%
+        return()
+      }))
+    })
+
+
+annotated_mappings <- data_frame(Mapping = 1:length(lineage_lists),
+                                 Immunophenotypes = lineage_lists)
+
+annotated_mappings %>%
+  unnest() %>% 
+  unnest() %>% 
+  
   
 ##########################################################################
 ############################     End code     ############################
