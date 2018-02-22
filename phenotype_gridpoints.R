@@ -164,6 +164,11 @@ annotated_mappings %>%
   unnest() %>% 
   unnest() %>% 
   
+  immunophenotypes_order <- order(str_count(row.names(filtered_count_table)), decreasing = T)
+
+unique_filtered_count_table <- unique(filtered_count_table[immunophenotypes_order,])
+uniq_immunophenotypes <- row.names(filtered_count_table)[immunophenotypes_order][!duplicated(filtered_count_table[immunophenotypes_order,])]
+
   
 ##########################################################################
 ############################     End code     ############################
