@@ -16,7 +16,7 @@ cyttools.R --compDiffExpr PANEL FEATURETABLE METADATA OUT
 cyttools.R --batchFlowType DIR OUT
 cyttools.R --batchFlowTypeDataMerge DIR PANEL OUT BATCH_DIR
 cyttools.R --makeReport DIR CLUSTERDIR DIFFDIR PANEL METADATA OUT
-cyttools.R --phenoConsensusClustering CLUSTERDIR PHENODIR PHENOCODES PANEL OUT
+cyttools.R --phenoConsensusClustering CLUSTERDIR PHENODIR PANEL OUT
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:

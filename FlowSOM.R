@@ -130,6 +130,6 @@ write.table(props_table, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.
 write.table(countTable, nodeCountFeatureTableFile, sep = "\t", quote = F, row.names = T)
 write.table(flowSOM.res$map$medianValues, nodeMedianFeatureTableFile, sep = "\t", quote = F, row.names = T)
 
-workspaceFile <- paste(RESULTS_DIR, "FlowSOMWorkspace.Rdata", sep = "")
-
-save.image(file = workspaceFile)
+# workspaceFile <- paste(RESULTS_DIR, "FlowSOMWorkspace.Rdata", sep = "")
+# 
+# save.image(file = workspaceFile)

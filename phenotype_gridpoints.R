@@ -52,22 +52,13 @@ file <- list.files(cluster_dir ,pattern='.fcs$', full=TRUE) # captures all FCS f
 lineage_markers <- targets$name[targets$Lineage == 1]
 functional_markers <- targets$name[targets$Functional == 1]
 
-if(args$transform == T){
-  cluster.flowSet.trans <- read.flowSet.transVS(targets, file)
-}else{
-  cluster.flowSet.trans <- read.flowSet(file)
-}
+cluster.flowSet.trans <- read.flowSet(file)
 
 # read in phenotyped FCS files
 pheno_dir <- args$PHENODIR # grabs directory from initial cyttools call
 
 pheno_file <- list.files(pheno_dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
-
-if(args$transform == T){
-  pheno.flowSet.trans <- read.flowSet.transVS(targets, pheno_file)
-}else{
-  pheno.flowSet.trans <- read.flowSet(pheno_file)
-}
+pheno.flowSet.trans <- read.flowSet(pheno_file)
 
 mappings <- cluster.flowSet.trans %>%
   fsApply(function(x){return(as.data.frame(exprs(x)))}, simplify = F) %>%
@@ -112,17 +103,17 @@ reduced_phenocodes <- diff_counts %>%
   select(starts_with("Phenotype_"),
          Mapping)
 
-medClusterCount <- cluster.flowSet.trans %>%
-  fsApply(function(x){return(as.data.frame(exprs(x)))}, simplify = F) %>%
-  bind_rows(.id = "FileNames") %>%
-  group_by(Mapping, FileNames) %>%
-  summarise(n()) %>%
-  mutate(rare_pop_score = `n()`/100) %>%
-  ungroup() %>%
-  group_by(Mapping) %>%
-  summarise(max_rare_pop = max(rare_pop_score),
-            med_rare_pop = median(rare_pop_score),
-            min_rare_pop = min(rare_pop_score))
+# medClusterCount <- cluster.flowSet.trans %>%
+#   fsApply(function(x){return(as.data.frame(exprs(x)))}, simplify = F) %>%
+#   bind_rows(.id = "FileNames") %>%
+#   group_by(Mapping, FileNames) %>%
+#   summarise(n()) %>%
+#   mutate(rare_pop_score = `n()`/100) %>%
+#   ungroup() %>%
+#   group_by(Mapping) %>%
+#   summarise(max_rare_pop = max(rare_pop_score),
+#             med_rare_pop = median(rare_pop_score),
+#             min_rare_pop = min(rare_pop_score))
 
 ### MERGING FUNCTION GOES HERE? Hierarchical based perhaps? MST coordinates could assist? HAMMING DISTANCE?
 
@@ -160,20 +151,24 @@ lineage_lists <- phenocode_matrix %>%
 annotated_mappings <- data_frame(Mapping = 1:length(lineage_lists),
                                  Immunophenotypes = lineage_lists)
 
+annotated_mappings_file <- paste(RESULTS_DIR, "annotated_mappings.txt", sep = "")
+
 annotated_mappings %>%
   unnest() %>% 
   unnest() %>% 
+  write_tsv(annotated_mappings_file)
   
-  immunophenotypes_order <- order(str_count(row.names(filtered_count_table)), decreasing = T)
-
-unique_filtered_count_table <- unique(filtered_count_table[immunophenotypes_order,])
-uniq_immunophenotypes <- row.names(filtered_count_table)[immunophenotypes_order][!duplicated(filtered_count_table[immunophenotypes_order,])]
+  
+# immunophenotypes_order <- order(str_count(row.names(filtered_count_table)), decreasing = T)
+# 
+# unique_filtered_count_table <- unique(filtered_count_table[immunophenotypes_order,])
+# uniq_immunophenotypes <- row.names(filtered_count_table)[immunophenotypes_order][!duplicated(filtered_count_table[immunophenotypes_order,])]
 
   
 ##########################################################################
 ############################     End code     ############################
 ##########################################################################
 
-workspaceFile <- paste(RESULTS_DIR, "phenotype_gridpoints.Workspace.Rdata", sep = "")
+# workspaceFile <- paste(RESULTS_DIR, "phenotype_gridpoints.Workspace.Rdata", sep = "")
 
-save.image(file = workspaceFile)
+# save.image(file = workspaceFile)

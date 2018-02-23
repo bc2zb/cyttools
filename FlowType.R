@@ -53,7 +53,6 @@ if(args$transform == T){
   flowSet.trans <- read.flowSet(file)
 }
 
-
 colsToUse <- targets$name[targets$Lineage == 1 & targets$Ignore == 0]
 
 if(length(colsToUse) %% 2  == 1){
@@ -61,7 +60,6 @@ if(length(colsToUse) %% 2  == 1){
 }else{
   batches <- seq(1, length(colsToUse), by = 2)
 }
-
 
 flowTypeResults <- lapply(seq_along(flowSet.trans), function(y){
   PartitionsList <- lapply(seq_along(batches), function(x){
@@ -75,7 +73,7 @@ flowTypeResults <- lapply(seq_along(flowSet.trans), function(y){
             PropMarkers = colsToUse[start:end],
             MFIMarkers = colsToUse[start:end],
             Methods = "kmeans",
-            PartitionsPerMarker = partitionsPerMarker[start:end],
+            PartitionsPerMarker = targets$PartitionsPerMarker[targets$Ignore == 0][start:end],
             MarkerNames = targets$desc[colsToUse[start:end]])
     return(test@Partitions)
   })
