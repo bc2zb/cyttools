@@ -11,7 +11,7 @@ cyttools.R --makeMetaDataBlank DIR OUT
 cyttools.R [--transform=<bool>] --computeNRS DIR PANEL OUT
 cyttools.R [--transform=<bool>] --cluster=<algorithm> DIR PANEL OUT
 cyttools.R --compDiffAbndnc PANEL FEATURETABLE METADATA OUT
-cyttools.R --compDiffCount PANEL FEATURETABLE METADATA OUT
+cyttools.R --compDiffCount ANNOTATIONS CLUSTERDIR METADATA OUT
 cyttools.R --compDiffExpr PANEL FEATURETABLE METADATA OUT
 cyttools.R --batchFlowType DIR OUT
 cyttools.R --batchFlowTypeDataMerge DIR PANEL OUT BATCH_DIR
@@ -45,7 +45,7 @@ BATCHDIR      Provide a directory of BATCH results files
 CLUSTERDIR    Provide a directory of clustering results files
 PHENODIR      Provide a directory of phenotyping results files
 DIFFDIR       Provide a directory of differential results files
-PHENOCODES    Provide phenocodes file, use --flowType to generate
+ANNOTATIONS   Provide annotations file, use --flowType to generate
 
 " -> doc
 

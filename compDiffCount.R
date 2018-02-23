@@ -49,12 +49,44 @@ targets$SampleID <- factor(targets$SampleID, levels = unique(targets$SampleID))
 
 orderList <- gsub("\\s", ".", targets$FileName)
 
-props_table <- read.delim(args$FEATURETABLE, row.names = 1)
-props_table <- props_table[,orderVectorByListOfTerms(colnames(props_table), orderList)]
+# read in clusterd FCS files
+cluster_dir <- args$CLUSTERDIR # grabs directory from initial cyttools call
+file <- list.files(cluster_dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
 
-propData <- DGEList(props_table[(props_table %>% apply(1, max)) > 100,],
-                    lib.size = colSums(props_table))
+lineage_markers <- targets$name[targets$Lineage == 1]
+functional_markers <- targets$name[targets$Functional == 1]
 
+cluster.flowSet.trans <- read.flowSet(file)
+
+countTable <- cluster.flowSet.trans %>%
+  fsApply(function(x){return(as.data.frame(exprs(x)))}, simplify = F) %>%
+  bind_rows(.id = "FileNames") %>%
+  group_by(FileNames, Mapping) %>% 
+  summarise(n()) %>% 
+  left_join(read_tsv(args$ANNOTATIONS)) %>% 
+  ungroup() %>%
+  group_by(FileNames, Immunophenotypes) %>%
+  summarise(Count = sum(`n()`)) %>% 
+  spread(FileNames,
+         Count,
+         fill = 0) %>% 
+  column_to_rownames("Immunophenotypes")
+
+cell_count_total <- cluster.flowSet.trans %>%
+  fsApply(function(x){return(as.data.frame(exprs(x)))}, simplify = F) %>%
+  bind_rows(.id = "FileNames") %>%
+  group_by(FileNames) %>% 
+  summarise(n())
+
+immunophenotypes_order <- order(str_count(row.names(countTable)), decreasing = T)
+
+unique_filtered_count_table <- unique(countTable[immunophenotypes_order,])
+uniq_immunophenotypes <- row.names(countTable)[immunophenotypes_order][!duplicated(countTable[immunophenotypes_order,])]
+
+row.names(unique_filtered_count_table) <- uniq_immunophenotypes
+
+propData <- DGEList(unique_filtered_count_table,
+                    lib.size = cell_count_total$`n()`[cell_count_total$FileNames %in% colnames(unique_filtered_count_table)])
 
 exprDesign <- targets$Condition
 
@@ -63,7 +95,7 @@ diffAbndncStatsTable <- tibble()
 for (baseline in levels(exprDesign)){
   
   tmpExprDesign <- relevel(exprDesign, baseline)
-  design <- model.matrix(~targets$SampleID + tmpExprDesign)
+  design <- model.matrix(~tmpExprDesign)
   colnames(design) <- gsub("tmpExprDesign", "Cnd.", colnames(design))
   colnames(design) <- gsub("targets\\$SampleID|targets\\$Group", "BatchEffect", colnames(design))
 
