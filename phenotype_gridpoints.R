@@ -152,6 +152,20 @@ annotated_mappings <- data_frame(Mapping = 1:length(lineage_lists),
                                  Immunophenotypes = lineage_lists)
 
 annotated_mappings_file <- paste(RESULTS_DIR, "annotated_mappings.txt", sep = "")
+distinct_mappings_file <- paste(RESULTS_DIR, "distinct_mappings.txt", sep = "")
+
+
+annotated_mappings %>%
+  unnest() %>% 
+  unnest() %>% 
+  group_by(Immunophenotypes) %>%
+  summarise(Mappings = paste0(Mapping, collapse = ",")) %>%
+  mutate(Num_Markers = str_count(Immunophenotypes, "\\+|\\-|lo|hi"),
+         Num_GridPoints = str_count(Mappings, ",") + 1) %>%
+  arrange(desc(Num_Markers)) %>%
+  distinct(Mappings,
+           .keep_all = T) %>%
+  write_tsv(distinct_mappings_file)
 
 annotated_mappings %>%
   unnest() %>% 
