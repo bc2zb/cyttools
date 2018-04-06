@@ -67,7 +67,6 @@ countTable <- cluster.flowSet.trans %>%
   ungroup() %>%
   group_by(FileNames, Immunophenotypes) %>%
   summarise(Count = sum(`n()`)) %>% 
-  dplyr::filter(Count >= 75) %>%
   spread(FileNames,
          Count,
          fill = 0) %>% 
