@@ -17,6 +17,7 @@ cyttools.R --batchFlowType DIR OUT
 cyttools.R --batchFlowTypeDataMerge DIR PANEL OUT BATCH_DIR
 cyttools.R --makeReport DIR CLUSTERDIR DIFFDIR PANEL METADATA OUT
 cyttools.R --phenoConsensusClustering CLUSTERDIR PHENODIR PANEL OUT
+cyttools.R --inspectr DIR OUT
 
 Description:   This program performs automated high parameter cytometry data analysis.
 Options:
@@ -33,6 +34,7 @@ Options:
 --batchFlowTypeDataMerge   Merge FlowType results from batch mode
 --makeReport               Plot significant results from differential analysis
 --phenoConsensusClustering Consensus cluster gridpoints from SOM using phenotypes from FlowType
+--inspectr                 Performs spillover spreading of compensated FCS files or similarity scoring for raw spectral FCS
 
 Arguments:
 
@@ -102,6 +104,11 @@ if(args$`--version` == T){ # returns version if version is requested
   }else if(args$`--makeReport` == T){
     
     COMMAND <- paste("Rscript makeReport.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""))
+    system(command = COMMAND)
+  }else if(args$`--inspectr` == T){
+    
+    COMMAND <- paste("Rscript inspectr.R",
                      paste("'", RESULTS_DIR, "'", sep = ""))
     system(command = COMMAND)
   }else if(args$`--phenoConsensusClustering` == T){
