@@ -417,3 +417,61 @@ bartlettTest <- function (peakStats)
                                                               k))/(3 * (k - 1)))
   return(bt)
 }
+
+preprocess_frame <- function(flow_frame){
+  # gate out debris
+  nondebris_gate <- gate_mindensity(flow_frame, "FSC-A")
+  # split flow_frame into positive and negative frames
+  nondebris_set <- split(flow_frame,
+                         flowCore::filter(flow_frame, nondebris_gate))
+  # beads and cells have different responses to this gate, grab whichever has the higher number of events
+  num_pos_events <- nrow(nondebris_set$`+`)
+  num_neg_events <- nrow(nondebris_set$`-`)
+  if(num_pos_events > num_neg_events){
+    nondebris_frame <- nondebris_set$`+`
+  }else{
+    nondebris_frame <- nondebris_set$`-`
+  }
+  # gate singlets
+  singlets_gate <- gate_singlet(nondebris_frame, maxit = 20, wider_gate = T)
+  singlets_set <- split(nondebris_frame,
+                        flowCore::filter(nondebris_frame, singlets_gate))
+  # retrive singlets only
+  singlets_frame <- singlets_set$`singlet+`
+  # perform ellipsoid gating to tighten up population
+  ellipsoid_gate <- gate_flowClust_2d(singlets_frame,
+                                      xChannel = "FSC-A",
+                                      yChannel = "SSC-A")
+  ellipsoid_set <- split(singlets_frame,
+                         flowCore::filter(singlets_frame, ellipsoid_gate))
+  # retrieve events from within ellipsoid
+  preprocessed_frame <- ellipsoid_set$`defaultEllipsoidGate+`
+  return(preprocessed_frame)
+}
+safe_preprocess_frame <- safely(preprocess_frame)
+
+find_peak_emission_detector <- function(preprocess_frame){
+  channel_info <- data.frame()
+  for( j in colnames(preprocess_frame[,grep("SSC|FSC|Time|\\-H", colnames(preprocess_frame), invert = T)]
+  )){
+    g <- gate_mindensity(preprocess_frame[,grep("SSC|FSC|Time|\\-H", colnames(preprocess_frame), invert = T)],
+                         channel = j)
+    peak_frame <- split(preprocess_frame[,grep("SSC|FSC|Time|\\-H", colnames(preprocess_frame), invert = T)],
+                        flowCore::filter(preprocess_frame[,grep("SSC|FSC|Time|\\-H", colnames(preprocess_frame), invert = T)],
+                                         g))[[1]]
+    num_events <- nrow(peak_frame)
+    median_intensity <- median(exprs(peak_frame)[,colnames(peak_frame) %in% j])
+    channel_info <- channel_info %>% 
+      bind_rows(data.frame("channel" = j,
+                           "num_events" = num_events,
+                           "median_intensity" = median_intensity))
+  }
+
+  channel_info <- channel_info %>%
+    dplyr::filter(num_events > 100)
+  peak_channel <- channel_info$channel[which.max(channel_info$median_intensity)]
+  g <- gate_mindensity(preprocess_frame, channel = peak_channel)
+  peak_frame <- split(preprocess_frame, flowCore::filter(preprocess_frame, g))[[1]]
+  # extract median intesities for all other channels
+  return(apply(exprs(peak_frame), 2, median))
+}
