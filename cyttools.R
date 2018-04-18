@@ -16,6 +16,7 @@ cyttools.R --compDiffExpr PANEL FEATURETABLE METADATA OUT
 cyttools.R --makeReport DIR CLUSTERDIR DIFFDIR PANEL METADATA OUT
 cyttools.R --phenoConsensusClustering CLUSTERDIR PHENODIR PANEL OUT
 cyttools.R --inspectr DIR OUT
+cyttools.R [--clean=<bool>] --logicleTransform DIR OUT
 
 Description:   This program performs automated high parameter cytometry data analysis.
 
@@ -33,6 +34,8 @@ Options:
 --makeReport                Plot significant results from differential analysis
 --phenoConsensusClustering  Consensus cluster gridpoints from SOM using phenotypes from FlowType
 --inspectr                  Performs spillover spreading of compensated FCS files or similarity scoring for raw spectral FCS
+--logicleTransform          Transform files using estimateLogicle and write out to new directory
+--clean=<false>             [default: FALSE] Should cyttools gate for singlets, debris, and lymph?
 
 Arguments:
 
@@ -106,6 +109,11 @@ if(args$`--version` == T){ # returns version if version is requested
   }else if(args$`--inspectr` == T){
     
     COMMAND <- paste("Rscript inspectr.R",
+                     paste("'", RESULTS_DIR, "'", sep = ""))
+    system(command = COMMAND)
+  }else if(args$`--logicleTransform` == T){
+    
+    COMMAND <- paste("Rscript logicleTransform.R",
                      paste("'", RESULTS_DIR, "'", sep = ""))
     system(command = COMMAND)
   }else if(args$`--phenoConsensusClustering` == T){

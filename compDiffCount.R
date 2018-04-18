@@ -31,7 +31,6 @@ RESULTS_DIR <- args$OUT
 
 source("cyttoolsFunctions.R")
 
-panelDesign <- read.delim(args$PANEL)
 targets <- read.delim(args$METADATA)
 
 colsToCheck <- c("TimePoint", "Condition", "SampleID", "FileName", "Group")
@@ -52,9 +51,6 @@ orderList <- gsub("\\s", ".", targets$FileName)
 # read in clusterd FCS files
 cluster_dir <- args$CLUSTERDIR # grabs directory from initial cyttools call
 file <- list.files(cluster_dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
-
-lineage_markers <- targets$name[targets$Lineage == 1]
-functional_markers <- targets$name[targets$Functional == 1]
 
 cluster.flowSet.trans <- read.flowSet(file)
 

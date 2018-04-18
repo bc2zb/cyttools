@@ -50,7 +50,7 @@ functional_markers <- targets$name[targets$Functional == 1]
 if(args$transform == T){
   flowSet.trans <- read.flowSet.transVS(targets, file)
 }else{
-  flowSet.trans <- read.flowSet(file)
+  flowSet.trans <- read.flowSet(file, transformation = F, truncate_max_range = F)
 }
 
 fsom <- ReadInput(flowSet.trans, transform = FALSE, scale = FALSE)
