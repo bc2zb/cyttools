@@ -52,13 +52,13 @@ file <- list.files(cluster_dir ,pattern='.fcs$', full=TRUE) # captures all FCS f
 lineage_markers <- targets$name[targets$Lineage == 1]
 functional_markers <- targets$name[targets$Functional == 1]
 
-cluster.flowSet.trans <- read.flowSet(file)
+cluster.flowSet.trans <- read.flowSet(file, transformation = F, truncate_max_range = F)
 
 # read in phenotyped FCS files
 pheno_dir <- args$PHENODIR # grabs directory from initial cyttools call
 
 pheno_file <- list.files(pheno_dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
-pheno.flowSet.trans <- read.flowSet(pheno_file)
+pheno.flowSet.trans <- read.flowSet(pheno_file, transformation = F, truncate_max_range = F)
 
 mappings <- cluster.flowSet.trans %>%
   fsApply(function(x){return(as.data.frame(exprs(x)))}, simplify = F) %>%

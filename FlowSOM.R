@@ -59,11 +59,9 @@ set.seed(1234)
 colsToUse <- which(targets$name %in% lineage_markers[lineage_markers %in% targets$name[targets$Ignore == 0]] == T)
 
 som <- BuildSOM(fsom,
-                colsToUse = colsToUse,
+                colsToUse = targets$name[colsToUse],
                 xdim = length(colsToUse),
                 ydim = length(colsToUse))
-
-som$prettyColnames <- targets$desc
 
 flowSOM.res <- BuildMST(som)
 
@@ -78,27 +76,6 @@ ResultsTable$FileNames <- fileNames
 ResultsTable$Mapping <- flowSOM.res$map$mapping[,1]
 ResultsTable$DistToNode <- flowSOM.res$map$mapping[,2]
 
-panelDesign <- targets
-
-medExprData <- flowSOM.res$map$medianValues[,panelDesign$Ignore == 0]
-medExprData <- t(medExprData)
-colnames(medExprData) <- c(1:ncol(medExprData))
-
-nodeExprTable <- ResultsTable %>%
-  group_by_at(vars(FileNames, Mapping)) %>%
-  summarise_at(colnames(ResultsTable)[colnames(ResultsTable) %in% targets$name[targets$Functional == 1 | targets$Lineage == 1]],
-               median) %>%
-  gather(Metal,
-         Intensity,
-         -Mapping, 
-         -FileNames) %>%
-  spread(FileNames,
-         Intensity)
-
-countTable <- ResultsTable[,grep("Mapping|FileNames", colnames(ResultsTable))]
-countTable <- table(countTable$Mapping, countTable$FileNames)
-props_table <- t(t(countTable) / colSums(countTable))
-
 ResultsTable <- ResultsTable %>% left_join(flowSOM.res$MST$l %>%
                                              as.data.frame() %>%
                                              setNames(c("cyttools_dim_x", "cyttools_dim_y")) %>%
@@ -112,7 +89,7 @@ for( files in file){
     dplyr::filter(FileNames == files) %>%
     select(Mapping, DistToNode, cyttools_dim_x, cyttools_dim_y)
   clusterFCS <- flowCore::cbind2(rawFCS, as.matrix(clusterData))
-  row.names(pData(parameters(clusterFCS))) <- paste0("$P", c(1:nrow(pData(parameters(clusterFCS)))))
+  row.names(pData(parameters(clusterFCS))) <- paste0("P", c(1:nrow(pData(parameters(clusterFCS)))))
   out.fcs.file <- paste0(RESULTS_DIR, "CLUSTERED_FCS/clustered_", basename(files))
   write.FCS(clusterFCS, out.fcs.file)
 }

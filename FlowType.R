@@ -91,7 +91,7 @@ for( files in file){
   phenotype_data <- flowTypeResults[[files]]
   colnames(phenotype_data) <- paste0("Phenotype_", targets$desc[targets$name %in% colsToUse])
   clusterFCS <- flowCore::cbind2(rawFCS, phenotype_data)
-  row.names(pData(parameters(clusterFCS))) <- paste0("$P", c(1:nrow(pData(parameters(clusterFCS)))))
+  row.names(pData(parameters(clusterFCS))) <- paste0("P", c(1:nrow(pData(parameters(clusterFCS)))))
   out.fcs.file <- paste0(RESULTS_DIR, "PHENOTYPED_FCS/phenotyped_", basename(files))
   write.FCS(clusterFCS, out.fcs.file)
 }
