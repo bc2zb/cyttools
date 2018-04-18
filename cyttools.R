@@ -13,28 +13,26 @@ cyttools.R [--transform=<bool>] --cluster=<algorithm> DIR PANEL OUT
 cyttools.R --compDiffAbndnc PANEL FEATURETABLE METADATA OUT
 cyttools.R --compDiffCount ANNOTATIONS CLUSTERDIR METADATA OUT
 cyttools.R --compDiffExpr PANEL FEATURETABLE METADATA OUT
-cyttools.R --batchFlowType DIR OUT
-cyttools.R --batchFlowTypeDataMerge DIR PANEL OUT BATCH_DIR
 cyttools.R --makeReport DIR CLUSTERDIR DIFFDIR PANEL METADATA OUT
 cyttools.R --phenoConsensusClustering CLUSTERDIR PHENODIR PANEL OUT
 cyttools.R --inspectr DIR OUT
 
 Description:   This program performs automated high parameter cytometry data analysis.
+
 Options:
---version                  Show the current version.
---makePanelBlank           Produce a panel design file based on FCS files in DIR
---makeMetaDataBlank        Produce a meta data file based on FCS files in DIR
---transform=<true>         [default: TRUE] Transform data using arcsinH and cofactors specified in PANEL
---computeNRS               Compute non redundancy score for parameters
---cluster=<algorithm>      [default: FlowSOM] The algorithm to use for clustering.
---compDiffAbndnc           Test for differential abundance using logit transformed frequency data and limma
---compDiffCount            Test for differential counts using edgeR
---compDiffExpr             Test for differential expression using limma
---batchFlowType            Run FlowType in batch mode, iterating over all .Rdata files in DIR
---batchFlowTypeDataMerge   Merge FlowType results from batch mode
---makeReport               Plot significant results from differential analysis
---phenoConsensusClustering Consensus cluster gridpoints from SOM using phenotypes from FlowType
---inspectr                 Performs spillover spreading of compensated FCS files or similarity scoring for raw spectral FCS
+
+--version                   Show the current version.
+--makePanelBlank            Produce a panel design file based on FCS files in DIR
+--makeMetaDataBlank         Produce a meta data file based on FCS files in DIR
+--transform=<true>          [default: TRUE] Transform data using arcsinH and cofactors specified in PANEL
+--computeNRS                Compute non redundancy score for parameters
+--cluster=<algorithm>       [default: FlowSOM] The algorithm to use for clustering.
+--compDiffAbndnc            Test for differential abundance using logit transformed frequency data and limma
+--compDiffCount             Test for differential counts using edgeR
+--compDiffExpr              Test for differential expression using limma
+--makeReport                Plot significant results from differential analysis
+--phenoConsensusClustering  Consensus cluster gridpoints from SOM using phenotypes from FlowType
+--inspectr                  Performs spillover spreading of compensated FCS files or similarity scoring for raw spectral FCS
 
 Arguments:
 
@@ -47,14 +45,13 @@ BATCHDIR      Provide a directory of BATCH results files
 CLUSTERDIR    Provide a directory of clustering results files
 PHENODIR      Provide a directory of phenotyping results files
 DIFFDIR       Provide a directory of differential results files
-ANNOTATIONS   Provide annotations file, use --flowType to generate
 
 " -> doc
 
 args <- docopt(doc)
 
 algList <- c("FlowSOM",
-             "FlowType", "ParFlowType", "BatchFlowTypeDataPrep")
+             "FlowType")
 
 
 if(args$`--version` == T){ # returns version if version is requested
@@ -116,18 +113,6 @@ if(args$`--version` == T){ # returns version if version is requested
     COMMAND <- paste("Rscript phenotype_gridpoints.R",
                      paste("'", RESULTS_DIR, "'", sep = ""))
     system(command = COMMAND)
-  }else if(args$`--batchFlowType` == T){
-    
-    cat(paste("\nPreparing to run FlowType in batch mode ", " on ", args$DIR, "\n\n", sep = ""))
-    COMMAND <- paste("Rscript BatchFlowType.R",
-                     paste("'", RESULTS_DIR, "'", sep = ""))
-    system(command = COMMAND)
-  }else if(args$`--batchFlowTypeDataMerge` == T){
-    
-    cat(paste("\nPreparing to merge results from FlowType in batch mode ", " on ", args$DIR, "\n\n", sep = ""))
-    COMMAND <- paste("Rscript BatchFlowTypeDataMerge.R",
-                     paste("'", RESULTS_DIR, "'", sep = ""))
-    system(command = COMMAND)
   }else if(args$`--cluster` == "FlowSOM"){
     
     cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
@@ -138,18 +123,6 @@ if(args$`--version` == T){ # returns version if version is requested
     
     cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
     COMMAND <- paste("Rscript FlowType.R",
-                     paste("'", RESULTS_DIR, "'", sep = ""))
-    system(command = COMMAND)
-  }else if(args$`--cluster` == "ParFlowType"){
-    
-    cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
-    COMMAND <- paste("Rscript ParFlowType.R",
-                     paste("'", RESULTS_DIR, "'", sep = ""))
-    system(command = COMMAND)
-  }else if(args$`--cluster` == "BatchFlowTypeDataPrep"){
-    
-    cat(paste("\nPreparing to run analysis using ", args$`--cluster`, " on ", args$DIR, "\n\n", sep = ""))
-    COMMAND <- paste("Rscript BatchFlowTypeDataPrep.R",
                      paste("'", RESULTS_DIR, "'", sep = ""))
     system(command = COMMAND)
   }else{

@@ -124,8 +124,8 @@ phenocode_matrix <- lapply(seq_along(colnames(reduced_phenocodes %>%
                      marker <- gsub("Phenotype_", "", colnames(reduced_phenocodes)[x])
                      phenocode_vector <- reduced_phenocodes[,x]
                      if(max(as.numeric(phenocode_vector[[1]])) == 3){
-                       phenocode_vector[phenocode_vector == 3] <- paste0(marker, "hi")
-                       phenocode_vector[phenocode_vector == 2] <- paste0(marker, "lo")
+                       phenocode_vector[phenocode_vector == 3] <- paste0(marker, "+")
+                       phenocode_vector[phenocode_vector == 2] <- paste0(marker, "-")
                        phenocode_vector[phenocode_vector == 1] <- paste0(marker, "-")
                        phenocode_vector[phenocode_vector == 0] <- ""
                      }else{

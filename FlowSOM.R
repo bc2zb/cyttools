@@ -117,18 +117,18 @@ for( files in file){
   write.FCS(clusterFCS, out.fcs.file)
 }
 
-# write out results
-ResultsTableFile <- paste(RESULTS_DIR, "FlowSOMResultsTable.txt", sep = "")
-nodeExprTableFile <- paste(RESULTS_DIR, "nodeExpressionFeatureTable.txt", sep = "")
-nodeAbndncFeatureTableFile <- paste(RESULTS_DIR, "nodeAbundanceFeatureTable.txt", sep = "")
-nodeCountFeatureTableFile <- paste(RESULTS_DIR, "nodeCountFeatureTable.txt", sep = "")
-nodeMedianFeatureTableFile <- paste(RESULTS_DIR, "nodeMedianFeatureTable.txt", sep = "")
-
-write.table(ResultsTable, ResultsTableFile, sep = "\t", quote = F, row.names = F)
-write.table(nodeExprTable, nodeExprTableFile, sep = "\t", quote = F, row.names = T)
-write.table(props_table, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = T)
-write.table(countTable, nodeCountFeatureTableFile, sep = "\t", quote = F, row.names = T)
-write.table(flowSOM.res$map$medianValues, nodeMedianFeatureTableFile, sep = "\t", quote = F, row.names = T)
+# # write out results
+# ResultsTableFile <- paste(RESULTS_DIR, "FlowSOMResultsTable.txt", sep = "")
+# nodeExprTableFile <- paste(RESULTS_DIR, "nodeExpressionFeatureTable.txt", sep = "")
+# nodeAbndncFeatureTableFile <- paste(RESULTS_DIR, "nodeAbundanceFeatureTable.txt", sep = "")
+# nodeCountFeatureTableFile <- paste(RESULTS_DIR, "nodeCountFeatureTable.txt", sep = "")
+# nodeMedianFeatureTableFile <- paste(RESULTS_DIR, "nodeMedianFeatureTable.txt", sep = "")
+# 
+# write.table(ResultsTable, ResultsTableFile, sep = "\t", quote = F, row.names = F)
+# write.table(nodeExprTable, nodeExprTableFile, sep = "\t", quote = F, row.names = T)
+# write.table(props_table, nodeAbndncFeatureTableFile, sep = "\t", quote = F, row.names = T)
+# write.table(countTable, nodeCountFeatureTableFile, sep = "\t", quote = F, row.names = T)
+# write.table(flowSOM.res$map$medianValues, nodeMedianFeatureTableFile, sep = "\t", quote = F, row.names = T)
 
 # workspaceFile <- paste(RESULTS_DIR, "FlowSOMWorkspace.Rdata", sep = "")
 # 
