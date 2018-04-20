@@ -42,10 +42,35 @@ if(checkDesignCols(targets, colsToCheck)){
 lineage_markers <- targets$name[targets$Lineage == 1]
 functional_markers <- targets$name[targets$Functional == 1]
 
-if(args$transform == T){
+if(args$transform == "logicle"){
+  # read in fcs files
+  ncfs <- read.ncdfFlowSet(file)
+  
+  chnls <- colnames(ncfs)[grep("SSC|FSC|Time|\\-H", colnames(ncfs), invert = T)]
+  safe_estimate_logicle <- safely(estimateLogicle)
+  transFuncts <- fsApply(ncfs, safe_estimate_logicle, channels = paste0("^", chnls)) %>%
+    modify_depth(1, 1) %>%
+    discard(is_null)
+  
+  safe_transform <- safely(transform)
+  
+  for ( i in 1:length(transFuncts)){
+    ncfs_trans <- safe_transform(ncfs, transFuncts[[i]])
+    if(is.null(ncfs_trans$error)){
+      flowSet.trans <- as.flowSet(ncfs_trans$result)
+      break
+    }else if(i == length(transFuncts)){
+      cat("\nERROR: No transform can be estimated, exiting now\n")
+      q()
+    }
+  }
+}else if(args$transform == "arcsinh"){
   flowSet.trans <- read.flowSet.transVS(targets, file)
-}else{
+}else if(args$transform == "none"){
   flowSet.trans <- read.flowSet(file, transformation = F, truncate_max_range = F)
+}else{
+  cat("\nNo transform specified, exiting now\n")
+  q()
 }
 
 ## Calculate the score

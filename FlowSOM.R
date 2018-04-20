@@ -47,10 +47,35 @@ file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in 
 lineage_markers <- targets$name[targets$Lineage == 1]
 functional_markers <- targets$name[targets$Functional == 1]
 
-if(args$transform == T){
-  flowSet.trans <- read.flowSet.transVS(targets, file)
-}else{
+if(args$transform == "logicle"){
+  # read in fcs files
+  ncfs <- read.ncdfFlowSet(file)
+    
+  chnls <- colnames(ncfs)[grep("SSC|FSC|Time|\\-H", colnames(ncfs), invert = T)]
+  safe_estimate_logicle <- safely(estimateLogicle)
+  transFuncts <- fsApply(ncfs, safe_estimate_logicle, channels = paste0("^", chnls)) %>%
+    modify_depth(1, 1) %>%
+    discard(is_null)
+    
+  safe_transform <- safely(transform)
+    
+  for ( i in 1:length(transFuncts)){
+    ncfs_trans <- safe_transform(ncfs, transFuncts[[i]])
+    if(is.null(ncfs_trans$error)){
+      flowSet.trans <- as.flowSet(ncfs_trans$result)
+      break
+    }else if(i == length(transFuncts)){
+      cat("\nERROR: No transform can be estimated, exiting now\n")
+      q()
+    }
+  }
+}else if(args$transform == "arcsinh"){
+    flowSet.trans <- read.flowSet.transVS(targets, file)
+}else if(args$transform == "none"){
   flowSet.trans <- read.flowSet(file, transformation = F, truncate_max_range = F)
+}else{
+  cat("\nNo transform specified, exiting now\n")
+  q()
 }
 
 fsom <- ReadInput(flowSet.trans, transform = FALSE, scale = FALSE)
@@ -89,7 +114,7 @@ for( files in file){
     dplyr::filter(FileNames == files) %>%
     select(Mapping, DistToNode, cyttools_dim_x, cyttools_dim_y)
   clusterFCS <- flowCore::cbind2(rawFCS, as.matrix(clusterData))
-  row.names(pData(parameters(clusterFCS))) <- paste0("P", c(1:nrow(pData(parameters(clusterFCS)))))
+  row.names(pData(parameters(clusterFCS))) <- paste0("$P", c(1:nrow(pData(parameters(clusterFCS)))))
   out.fcs.file <- paste0(RESULTS_DIR, "CLUSTERED_FCS/clustered_", basename(files))
   write.FCS(clusterFCS, out.fcs.file)
 }

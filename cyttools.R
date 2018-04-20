@@ -9,7 +9,7 @@ cyttools.R (-h | --help | --version)
 cyttools.R --makePanelBlank DIR OUT
 cyttools.R --makeMetaDataBlank DIR OUT
 cyttools.R [--transform=<bool>] --computeNRS DIR PANEL OUT
-cyttools.R [--transform=<bool>] --cluster=<algorithm> DIR PANEL OUT
+cyttools.R [--transform=<trans>] --cluster=<algorithm> DIR PANEL OUT
 cyttools.R --compDiffAbndnc PANEL FEATURETABLE METADATA OUT
 cyttools.R --compDiffCount ANNOTATIONS CLUSTERDIR METADATA OUT
 cyttools.R --compDiffExpr PANEL FEATURETABLE METADATA OUT
@@ -25,7 +25,7 @@ Options:
 --version                   Show the current version.
 --makePanelBlank            Produce a panel design file based on FCS files in DIR
 --makeMetaDataBlank         Produce a meta data file based on FCS files in DIR
---transform=<true>          [default: TRUE] Transform data using arcsinH and cofactors specified in PANEL
+--transform=<arcsinh>       [default: arcsinh] Transform data using specified method (none, arcsinh, logicle)
 --computeNRS                Compute non redundancy score for parameters
 --cluster=<algorithm>       [default: FlowSOM] The algorithm to use for clustering.
 --compDiffAbndnc            Test for differential abundance using logit transformed frequency data and limma

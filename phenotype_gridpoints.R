@@ -79,43 +79,28 @@ map_counts <- mappings %>%
 diff_counts <- map_counts %>%
   spread(`factor(Phenotype)`,
          `n`,
-         fill = NA) %>%
-  mutate(`1` = if_else(is.na(`1`),
-                       as.double(0),
-                       as.double(`1`)),
-         `2` = if_else(is.na(`2`),
-                       as.double(0),
-                       as.double(`2`)),
-          diff = if_else(is.na(`3`),
-                        (`2` - `1`)/(`2` + `1`),
-                        (`3` - (`2` + `1`))/(`3` + `2` + `1`)))
+         fill = NA)
+
+if(str_detect(colnames(diff_counts)[length(colnames(diff_counts))], "3")){
+  diff_counts <- diff_counts
+}else{
+  diff_counts <- diff_counts %>%
+    ungroup() %>%
+    mutate(`3` = rep(as.double(NA), nrow(.)))
+}
 
 reduced_phenocodes <- diff_counts %>%
-  mutate(MarkerCode = case_when(diff < 0.75 & diff > -0.75 ~ 0,
-                                is.na(`3`) & diff >= 0.75 ~ 2,
-                                is.na(`3`) & diff <= -0.75 ~ 1,
-                                is.na(`3`) == F & diff >= 0.75 ~ 3,
-                                is.na(`3`) == F & diff <= -0.75 & ((`2` - (`3` + `1`))/(`3` + `2` + `1`)) >= -0.75 ~ 2,
-                                is.na(`3`) == F & diff <= -0.75 & ((`1` - (`3` + `2`))/(`3` + `2` + `1`)) >= -0.75 ~ 1)) %>%
+  mutate(MarkerCode = case_when(is.na(`3`) & (`2`/(`1` + `2`)) > 0.5 ~ 2,
+                                is.na(`3`) & (`1`/(`1` + `2`)) > 0.5 ~ 1,
+                                is.na(`3`) == F & (`3`/(`3` + `2` + `1`)) > 0.5 ~ 3,
+                                is.na(`3`) == F & (`2`/(`3` + `2` + `1`)) > 0.5 ~ 2,
+                                is.na(`3`) == F & (`1`/(`3` + `2` + `1`)) > 0.5 ~ 1,
+                                TRUE ~ 0)) %>%
   select(Mapping, PhenoCodes, MarkerCode) %>%
-  mutate(MarkerCode = factor(MarkerCode)) %>%
+  #mutate(MarkerCode = factor(MarkerCode)) %>%
   spread(PhenoCodes, MarkerCode) %>%
   select(starts_with("Phenotype_"),
          Mapping)
-
-# medClusterCount <- cluster.flowSet.trans %>%
-#   fsApply(function(x){return(as.data.frame(exprs(x)))}, simplify = F) %>%
-#   bind_rows(.id = "FileNames") %>%
-#   group_by(Mapping, FileNames) %>%
-#   summarise(n()) %>%
-#   mutate(rare_pop_score = `n()`/100) %>%
-#   ungroup() %>%
-#   group_by(Mapping) %>%
-#   summarise(max_rare_pop = max(rare_pop_score),
-#             med_rare_pop = median(rare_pop_score),
-#             min_rare_pop = min(rare_pop_score))
-
-### MERGING FUNCTION GOES HERE? Hierarchical based perhaps? MST coordinates could assist? HAMMING DISTANCE?
 
 phenocode_matrix <- lapply(seq_along(colnames(reduced_phenocodes %>%
                                                 ungroup() %>%
@@ -123,9 +108,9 @@ phenocode_matrix <- lapply(seq_along(colnames(reduced_phenocodes %>%
                    function(x){
                      marker <- gsub("Phenotype_", "", colnames(reduced_phenocodes)[x])
                      phenocode_vector <- reduced_phenocodes[,x]
-                     if(max(as.numeric(phenocode_vector[[1]])) == 3){
-                       phenocode_vector[phenocode_vector == 3] <- paste0(marker, "+")
-                       phenocode_vector[phenocode_vector == 2] <- paste0(marker, "-")
+                     if(max(as.numeric(as.character(phenocode_vector[[1]]))) == 3){
+                       phenocode_vector[phenocode_vector == 3] <- paste0(marker, "hi")
+                       phenocode_vector[phenocode_vector == 2] <- paste0(marker, "lo")
                        phenocode_vector[phenocode_vector == 1] <- paste0(marker, "-")
                        phenocode_vector[phenocode_vector == 0] <- ""
                      }else{
@@ -164,12 +149,12 @@ annotated_mappings %>%
          Num_GridPoints = str_count(Mappings, ",") + 1) %>%
   arrange(desc(Num_Markers)) %>%
   distinct(Mappings,
-           .keep_all = T) %>%
+           .keep_all = T) %>% 
   write_tsv(distinct_mappings_file)
 
 annotated_mappings %>%
   unnest() %>% 
-  unnest() %>% 
+  unnest() %>% View()
   write_tsv(annotated_mappings_file)
   
   
