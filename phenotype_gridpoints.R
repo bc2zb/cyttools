@@ -90,11 +90,11 @@ if(str_detect(colnames(diff_counts)[length(colnames(diff_counts))], "3")){
 }
 
 reduced_phenocodes <- diff_counts %>%
-  mutate(MarkerCode = case_when(is.na(`3`) & (`2`/(`1` + `2`)) > 0.5 ~ 2,
-                                is.na(`3`) & (`1`/(`1` + `2`)) > 0.5 ~ 1,
-                                is.na(`3`) == F & (`3`/(`3` + `2` + `1`)) > 0.5 ~ 3,
-                                is.na(`3`) == F & (`2`/(`3` + `2` + `1`)) > 0.5 ~ 2,
-                                is.na(`3`) == F & (`1`/(`3` + `2` + `1`)) > 0.5 ~ 1,
+  mutate(MarkerCode = case_when(is.na(`3`) & (`2`/(`1` + `2`)) > 0.75 ~ 2,
+                                is.na(`3`) & (`1`/(`1` + `2`)) > 0.75 ~ 1,
+                                is.na(`3`) == F & (`3`/(`3` + `2` + `1`)) > 0.75 ~ 3,
+                                is.na(`3`) == F & (`2`/(`3` + `2` + `1`)) > 0.75 ~ 2,
+                                is.na(`3`) == F & (`1`/(`3` + `2` + `1`)) > 0.75 ~ 1,
                                 TRUE ~ 0)) %>%
   select(Mapping, PhenoCodes, MarkerCode) %>%
   #mutate(MarkerCode = factor(MarkerCode)) %>%
@@ -154,7 +154,7 @@ annotated_mappings %>%
 
 annotated_mappings %>%
   unnest() %>% 
-  unnest() %>% View()
+  unnest() %>% 
   write_tsv(annotated_mappings_file)
   
   
