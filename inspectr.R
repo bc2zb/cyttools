@@ -87,6 +87,12 @@ if(length(which(colnames(preprocessed_set) %in% detector_order == T)) == length(
     mutate(sample_id = gsub("Reference Group_|\\_[0-9]*\\_[0-9]*\\.fcs$|\\.fcs$", "", file_names),
            experiment_id = rep(args$DIR, nrow(median_values)))
   
+  write_csv(cor_data,
+            path = paste0(RESULTS_DIR,
+                          "median-value-data-experiment-id-",
+                          make.names(cor_data$experiment_id[1]),
+                          ".csv"))
+  
   # make matrix to perform correlation coefficient computation
   cor_matrix <- cor_data %>%
     select(one_of(detector_order)) %>%
