@@ -21,3 +21,5 @@ Clone the repository to your local machine. Install R from [CRAN](https://cran.r
 Next, run the "Install required packages_cyttools.R" script using R. If successful, cyttools should be fully functional.
 
 cyttoolsPipeline.sh contains a generic analysis pipeline. Replace the file and directory paths at the top of the file with those on your system, and you should be able to run the analysis by running the script from the command line.
+
+Mass cytometry data was inverse hyberbolic sin transformed using a cofactor of 0.25. Lineage markers were used to construct a self-organizing map with 529 grid points. Phenocodes for every cell were derived using flowType and each grid point was immunophenotyped using the phenocodes of the cells assigned to the grid point. For each marker, grid points containing at least 75 percent of the same cell type were labeled as those cell type. For each phenotype observed, number of cells were tabulated to form a hierarchical count table. Every level of the hierarchy was tested for differential abundance between conditions using edgeR with a quasi likelihood framework. 
