@@ -20,6 +20,8 @@ Next, run the "Install required packages_cyttools.R" script using R. If successf
 
 cyttoolsPipeline.sh contains a generic analysis pipeline. Replace the file and directory paths at the top of the file with those on your system, and you should be able to run the analysis by running the script from the command line.
 
+In the coming months, cyttools will be distributed as an R package.
+
 ## Methods
 
 Mass cytometry data is inverse hyberbolic sin transformed using a cofactor of 0.25. [FlowSOM](http://bioconductor.org/packages/release/bioc/html/FlowSOM.html) is used to construct a self-organizing map with a number of grid points equal to the square of the number of lineage markers. Each cell is assigned a phenocode for every lineage marker using [flowType](http://bioconductor.org/packages/release/bioc/html/flowType.html). Each grid point is then immunophenotyped using the aggregated phenocodes of the cells assigned to the grid point. For any given grid point to be assigned an immunophenotype for a particular marker (i.e. CD45+), 75 percent of the cells assigned to the gridpoint must be labelled with the same phenocode for the particular marker. For each immunophenotype observed, number of cells are tabulated to form a hierarchical count table. Every level of the hierarchy is tested for differential abundance between conditions using edgeR with a quasi-likelihood framework as specified by the [cydar](http://bioconductor.org/packages/release/bioc/html/cydar.html) package. 
