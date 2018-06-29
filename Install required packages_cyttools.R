@@ -2,7 +2,6 @@
 ## Install required packages for Advanced R course section from CRAN and Bioconductor
 required_packages_CRAN <- c("tidyverse", "reshape2", "docopt", "methods", "parallel", "devtools")
 required_packages_BioC <- c("flowCore", "limma", "FlowSOM", "flowType")
-required_packages_github <- c("cytofCore")
 
 install.packages(required_packages_CRAN)
 
