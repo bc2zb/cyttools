@@ -3,15 +3,14 @@
 required_packages_CRAN <- c("tidyverse", "reshape2", "docopt", "methods", "parallel", "devtools")
 required_packages_BioC <- c("flowCore", "limma", "FlowSOM", "flowType")
 
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
 install.packages(required_packages_CRAN)
 
-library(devtools)
-install.packages(required_packages_github)
+BiocManager::install(required_packages_BioC)
 
-source("http://bioconductor.org/biocLite.R")
-biocLite(required_packages_BioC)
-
-########################################################################################
+n########################################################################################
 ## Tests whether all required packages 
 ## Press the 'Source' button in the top right corner of this pane and check 
 ## whether the output in the Console pane confirms that all packages are installed
