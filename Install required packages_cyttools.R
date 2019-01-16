@@ -10,7 +10,7 @@ install.packages(required_packages_CRAN)
 
 BiocManager::install(required_packages_BioC)
 
-n########################################################################################
+########################################################################################
 ## Tests whether all required packages 
 ## Press the 'Source' button in the top right corner of this pane and check 
 ## whether the output in the Console pane confirms that all packages are installed
