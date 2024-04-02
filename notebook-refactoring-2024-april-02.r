@@ -55,3 +55,7 @@ lapply(libraryList, require, quietly = T, character.only = TRUE)
 #### add in docopt ####
 
 install.packages("docopt")
+
+#### export yml ####
+
+export_string <- "conda env export > cyttools.yml"
