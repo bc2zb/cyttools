@@ -28,6 +28,7 @@ package_list <- c("radian",
                   "r-base",
                   "r-essentials",
                   "r-devtools",
+                  "r-biocmanager",
                   "bioconductor-limma",
                   "bioconductor-ncdfflow",
                   "bioconductor-opencyto",
@@ -59,3 +60,22 @@ install.packages("docopt")
 #### export yml ####
 
 export_string <- "conda env export > cyttools.yml"
+
+#### test flowVS code ####
+
+source("cyttoolsFunctions.R")
+
+
+dir <- "/data/capaldobj/cidc-cyttools-test-bed/"
+file <- list.files(dir,
+                   pattern = '.fcs$',
+                   full = TRUE)
+
+#### use panel blank code as template ####
+library(flowVS)
+flowSet <- read.ncdfFlowSet(file)
+
+panel <- as.data.frame(pData(parameters(flowSet[[1]])))
+
+cofactors_est <- flowVS::estParamFlowVS(flowSet, colnames(flowSet)[-c(1:2)])
+dev.off()

@@ -137,6 +137,55 @@ estParamFlowVS <- function (fs, channels)
   return(cofactors)
 }
 
+optimstat <- function (fs1D, cfLow = -10, cfHigh = 3, MAX_BT = 10^9)
+{
+    if (cfLow >= cfHigh) {
+        print("Warning: cfLow>=cfHigh, using default values")
+        cfLow = -1
+        cfHigh = 10
+    }
+    cf = cfLow:cfHigh
+    ncf = length(cf)
+    cfopt = rep(0, ncf - 1)
+    btopt = rep(0, ncf - 1)
+    cat(sprintf("%18s       %10s    %15s  %8s \n", "cf range", 
+        "opt cf", "Bartlett's stat", "time"))
+    cat("====================================================================\n")
+    for (i in 1:(ncf - 1)) {
+        ptm <- proc.time()
+        tol = (exp(cf[i + 1]) - exp(cf[i]))/10
+        opt = suppressWarnings(optimize(f = flowVS1D, interval = c(exp(cf[i]), 
+            exp(cf[i + 1])), fs1D, tol = tol, plot = FALSE, MAX_BT = MAX_BT))
+        btopt[i] = opt$objective
+        cfopt[i] = opt$minimum
+        cat(sprintf("[%9.2f, %9.2f ] %10.2f ", exp(cf[i]), exp(cf[i + 
+            1]), opt$minimum))
+        if (opt$objective == MAX_BT) {
+            cat(sprintf("%10s ", " MAX (10^9)"))
+        }
+        else cat(sprintf("%15.2f ", opt$objective))
+        cat(sprintf("%13.2f \n", (proc.time() - ptm)[1]))
+    }
+    minIdx = which.min(btopt)
+    del = cfopt[minIdx]/10
+    btLocal = rep(0, 11)
+    btLocal[6] = btopt[minIdx]
+    cfLocal = c(5:1, cfopt[minIdx], 1:5)
+    cfLocal[1:5] = cfopt[minIdx] - 5:1 * del
+    cfLocal[7:11] = cfopt[minIdx] + 1:5 * del
+    for (i in c(1:5, 7:11)) {
+        btLocal[i] = flowVS1D(cfLocal[i], fs1D)
+    }
+    minIdx = which.min(btLocal)
+    plot(cfLocal, btLocal, type = "o", pch = 16, xlab = "Cofactors", 
+        ylab = "Bartlett's statistics", main = paste("Optimum cofactor for ", 
+            colnames(fs1D), " : ", format(round(cfLocal[minIdx], 
+                2), nsmall = 2), sep = ""))
+    points(cfLocal[minIdx], btLocal[minIdx], pch = 16, col = "red")
+    return(cfLocal[minIdx])
+}
+
+
 optimStat <- function (fs1D, cfLow = -10, cfHigh = 3, MAX_BT = 10^9) 
 {
   if (cfLow >= cfHigh) {
