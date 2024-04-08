@@ -32,7 +32,7 @@ RESULTS_DIR <- args$OUT
 source("cyttoolsFunctions.R")
 
 targets <- read.delim(args$PANEL)
-colsToCheck <- c("Ignore", "TransformCofactor", "Lineage", "Functional", "NRS")
+colsToCheck <- c("Ignore", "TransformCofactor", "Lineage", "Functional")
 if(checkDesignCols(targets, colsToCheck)){
   missingCols <- colsToCheck[which(colsToCheck %in% colnames(targets) == F)]
   cat("\n\nERROR: PANEL file does not include required columns.
@@ -43,6 +43,13 @@ if(checkDesignCols(targets, colsToCheck)){
 
 dir <- args$DIR # grabs directory from initial cyttools call
 file <- list.files(dir ,pattern='.fcs$', full=TRUE) # captures all FCS files in the directory
+
+targets <- targets %>% mutate(Lineage = if_else(desc %in% c("Time",
+                                                 "Event_length",
+                                                 "Viability",
+                                                 "DNA") | desc == name,
+                                        0,
+                                        1))
 
 lineage_markers <- targets$name[targets$Lineage == 1]
 functional_markers <- targets$name[targets$Functional == 1]
@@ -113,7 +120,7 @@ for( files in file){
   clusterData <- ResultsTable %>%
     dplyr::filter(FileNames == files) %>%
     select(Mapping, DistToNode, cyttools_dim_x, cyttools_dim_y)
-  clusterFCS <- flowCore::cbind2(rawFCS, as.matrix(clusterData))
+  clusterFCS <- fr_append_cols(rawFCS, as.matrix(clusterData))
   row.names(pData(parameters(clusterFCS))) <- paste0("$P", c(1:nrow(pData(parameters(clusterFCS)))))
   out.fcs.file <- paste0(RESULTS_DIR, "CLUSTERED_FCS/clustered_", basename(files))
   write.FCS(clusterFCS, out.fcs.file)

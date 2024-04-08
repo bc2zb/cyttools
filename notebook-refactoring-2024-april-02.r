@@ -79,3 +79,10 @@ panel <- as.data.frame(pData(parameters(flowSet[[1]])))
 
 cofactors_est <- flowVS::estParamFlowVS(flowSet, colnames(flowSet)[-c(1:2)])
 dev.off()
+
+targets <- targets %>% mutate(Lineage = if_else(desc %in% c("Time",
+                                                 "Event_length",
+                                                 "Viability",
+                                                 "DNA") | desc == name,
+                                        0,
+                                        1))
