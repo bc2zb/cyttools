@@ -1,0 +1,141 @@
+cell_type,cell_type_index,Marker,Marker_status
+HSC,1,CD45RA,CD45RA+
+HSC,1,CD49,CD49+
+HSC,1,CD90,CD90+
+HSC,1,CD34,CD34+
+HSC,1,CD38,CD38-
+MPP,1,CD45RA,CD45RA+
+MPP,1,CD90,CD90+
+MPP,1,CD34,CD34+
+MPP,1,CD38,CD38-
+CLP,1,CD34,CD34+
+CLP,1,CD38,CD38+
+CLP,1,CD10,CD10+
+CLP,1,CD45RA,CD45RA+
+GMP,1,CD34,CD34+
+GMP,1,CD38,CD38+
+GMP,1,CD10,CD10-
+GMP,1,CD45RA,CD45RA+
+GMP,1,CD123,CD123+
+GMP,1,CD135,CD135+
+CMP,1,CD34,CD34+
+CMP,1,CD38,CD38+
+CMP,1,CD7,CD7-
+CMP,1,CD10,CD10-
+CMP,1,CD45RA,CD45RA-
+CMP,1,CD90,CD90+
+CMP,1,CD135,CD135+
+MEP,1,CD34,CD34+
+MEP,1,CD38,CD38+
+MEP,1,CD7,CD7-
+MEP,1,CD10,CD10-
+MEP,1,CD45RA,CD45RA-
+MEP,1,CD135,CD135-
+MEP,1,IL3Ralpha,IL3Ralpha-
+NK Cell,1,CD3,CD3-
+NK Cell,1,CD56,CD56+
+NK Cell,1,CD94,CD94+
+NK Cell,1,NKp46,NKp46+
+T cell,1,CD3,CD3+
+B cell,1,CD19,CD19+
+Monocyte,1,CD14,CD14+
+Macrophage,1,CD11b,CD11b+
+Macrophage,1,CD68,CD68+
+Macrophage,1,CD163,CD163+
+Dendritic Cell,1,CD11c,CD11c+
+Dendritic Cell,1,HLA-DR,HLA-DR+
+Neutrophil,1,CD11b,CD11b+
+Neutrophil,1,CD16,CD16+
+Neutrophil,1,CD18,CD18+
+Neutrophil,1,CD32,CD32+
+Neutrophil,1,CD44,CD44+
+Neutrophil,1,CD55,CD55+
+Eosinophil,1,CD45,CD45+
+Eosinophil,1,CD125,CD125+
+Eosinophil,1,CD193,CD193+
+Eosinophil,1,F4/80,F4/80+
+Eosinophil,1,Siglec-8,Siglec-8+
+Basophil,1,CD19,CD19-
+Basophil,1,CD22,CD22+
+Basophil,1,CD45,CD45lo
+Basophil,1,CD123,CD123+
+Mast cell,1,CD32,CD32+
+Mast cell,1,CD33,CD33+
+Mast cell,1,CD117,CD117+
+Mast cell,1,CD203c,CD203c+
+Mast cell,1,FceRI,FceRI+
+Erthyocyte,1,CD235a,CD235a+
+Megakaryocyte,1,CD41b,CD41b+
+Megakaryocyte,1,CD42a,CD42a+
+Megakaryocyte,1,CD42b,CD42b+
+Megakaryocyte,1,CD61,CD61+
+Platelet,1,CD41,CD41+
+Platelet,1,CD42a,CD42a+
+Platelet,1,CD42,CD42+
+Platelet,1,CD61,CD61+
+T All,1,CD3,CD3+
+T Killer T cell,1,CD8,CD8+
+T Killer T cell,2,IFNγ,IFNγ+
+T Killer T cell,2,TNF,TNF+
+T Killer T cell,3,EOMES,EOMES+
+T Helper T cell,1,CD4,CD4+
+T Helper Th1,1,CXCR3,CXCR3+
+T Helper Th1,2,IFNγ,IFNγ+
+T Helper Th1,2,IL-2,IL-2+
+T Helper Th1,2,IL-12,IL-12+
+T Helper Th1,2,IL-18,IL-18+
+T Helper Th1,3,STAT4,STAT4+
+T Helper Th1,3,STAT1,STAT1+
+T Helper Th2,1,CCR4,CCR4+
+T Helper Th2,2,IL-2,IL-2+
+T Helper Th2,2,IL-4,IL-4+
+T Treg cell,1,CD4,CD4+
+T Treg cell,1,CD25,CD25+
+T Treg cell,1,CD127,CD127+
+T Treg cell,1,CD152,CD152+
+T Treg cell,2,TGFβ,TGFβ+
+T Treg cell,2,IL-10,IL-10+
+T Treg cell,2,IL-12,IL-12+
+T Treg cell,3,FoxP3,FoxP3+
+T Treg cell,3,STAT5,STAT5+
+B B cell (all except plasma cells),1,IgM,IgM+
+B B cell (all except plasma cells),1,CD19,CD19+
+B Activated B cell,1,CD19,CD19+
+B Activated B cell,1,CD25,CD25+
+B Activated B cell,1,CD30,CD30+
+B Plasma cell,1,IgG,IgG+
+B Plasma cell,1,CD27,CD27+
+B Plasma cell,1,CD38,CD38+
+B Plasma cell,1,CD78,CD78+
+B Plasma cell,1,CD138,CD138+
+B Plasma cell,1,CD319,CD319+
+B Plasma cell,2,IL-6,IL-6+
+B Plasma cell,3,CD138,CD138+
+B Memory cell,1,IgA,IgA+
+B Memory cell,1,IgG,IgG+
+B Memory cell,1,IgE,IgE+
+B Memory cell,1,CD20,CD20+
+B Memory cell,1,CD27,CD27+
+B Memory cell,1,CD40,CD40+
+B Memory cell,1,CD80,CD80+
+B Memory cell,1,PD-L2,PD-L2+
+B Memory cell,2,CXCR3,CXCR3+
+B Memory cell,2,CXCR4,CXCR4+
+B Memory cell,2,CXCR5,CXCR5+
+B Memory cell,2,CXCR6,CXCR6+
+B Marginal zone B cells,1,CD1,CD1+
+B Marginal zone B cells,1,CD21,CD21+
+B Marginal zone B cells,1,CD27,CD27+
+B Marginal zone B cells,2,Notch2,Notch2+
+B Folliucular B cells,1,IgD,IgD+
+B Folliucular B cells,1,CD21,CD21+
+B Folliucular B cells,1,CD22,CD22+
+B Folliucular B cells,1,CD23,CD23+
+B Regulatory B cells,1,IgD,IgD+
+B Regulatory B cells,1,CD1,CD1+
+B Regulatory B cells,1,CD5,CD5+
+B Regulatory B cells,1,CD21,CD21+
+B Regulatory B cells,1,CD24,CD24+
+B Regulatory B cells,1,TLR4,TLR4+
+B Regulatory B cells,2,IL-10,IL-10+
+B Regulatory B cells,2,TGFβ,TGFβ+
