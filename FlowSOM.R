@@ -207,7 +207,15 @@ phenotype_table <- ResultsTable %>%
 
 #### perform immunophenotyping ####
 
-immunophenotype_list <- read_csv("master-phenotype-lookup.csv") %>%
+immunophenotype_list <- read_csv("immunophenotypes-profiling-database-2024-may-08.csv") %>%
+  select(-notes) %>%
+  distinct(cell_name, lineage_markers) %>%
+  filter(cell_name != "Root") %>%
+  separate_longer_delim(lineage_markers, " ") %>%
+  transmute(cell_type = cell_name,
+    cell_type_index = 1,
+    Marker = str_remove(lineage_markers, "\\+|\\-"),
+    Marker_status = lineage_markers) %>%
   mutate(Marker = str_replace_all(Marker, "HLA-DR", "HLADR"),
          Marker_status = str_replace_all(Marker_status, "HLA-DR", "HLADR")) %>%
   filter(Marker %in% colnames(phenotype_table)) %>%
@@ -232,8 +240,51 @@ phenotyped_table <- phenotyped_list %>%
               values_from = val,
               values_fill = 0L)
 
-head(phenotyped_table)
-head(ResultsTable)
+profile_list <- read_csv("immunophenotypes-profiling-database-2024-may-08.csv") %>%
+  select(-notes) %>%
+  distinct(CellSubset, cell_name, functional_markers) %>%
+  filter(cell_name != "Root") %>%
+  separate_longer_delim(functional_markers, " ") %>%
+  transmute(cell_type = cell_name,
+    CellSubset = CellSubset,
+    cell_type_index = 1,
+    Marker = str_remove(functional_markers, "\\hi|\\lo") %>%
+        str_remove("\\_"),
+    Marker_status = str_replace(functional_markers, "hi", "+") %>%
+        str_replace("lo", "-")) %>%
+  mutate(Marker = str_replace_all(Marker, "HLA-DR", "HLADR"),
+         Marker_status = str_replace_all(Marker_status, "HLA-DR", "HLADR")) %>%
+  mutate(population_desc = paste(cell_type, cell_type_index, sep = "_")) %>%
+  split(.$CellSubset) %>%
+  lapply(pivot_wider, names_from = Marker,
+                     values_from = Marker_status) %>%
+  lapply(function(df){
+    col_labels <- colnames(df)
+    colnames(df)[1] <- df$cell_type[1]
+    return(df %>%
+             select(-c(cell_type_index, population_desc)))
+  })
+
+profiled_table <- lapply(phenotyped_list, function(phenotyped_df){
+    cell_type_name <- phenotyped_df[1,1]
+    profile_cell_type_names <- lapply(profile_list, function(profile_df){
+        profile_df[,1][[1]][1]
+    }) %>%
+    unlist()
+    return(profile_list[names(profile_cell_type_names[profile_cell_type_names %in% cell_type_name[,1][[1]][1]])] %>%
+        lapply(left_join, phenotyped_df) %>%
+        lapply(transmute, map = map, val = 1L) %>%
+        bind_rows(.id = "cell_desc")) 
+}) %>%
+    bind_rows() %>%
+    filter(!is.na(map)) %>%
+    pivot_wider(names_from = cell_desc,
+                        values_from = val,
+                        values_fill = 0L)
+
+compartment_table <- phenotyped_table %>%
+    select(map, `B Cell_1`, `T Cell_1`, `Myeloid_1`, `NK Cell_1`, `Granulocyte Basophil_1`)
+
 #### write out results ####
 dir.create(paste0(RESULTS_DIR, "CLUSTERED_FCS/"),
            showWarnings = F)
@@ -249,18 +300,181 @@ for( files in file){
     mutate(across(all_of(colnames(phenotyped_table)[-1]),
       ~if_else(is.na(.x), 0, .x)))
   
-  clusterData %>%
-    select(-c(Mapping:cyttools_dim_y)) %>%
-    colSums() %>%
-    as.data.frame() %>%
-    setNames("count") %>%
-    rownames_to_column("population description") %>%
-    mutate(frequency = count/nrow(clusterData)) %>%
+# assignment.csv (Rows are channels, columns are population descriptions, values are median signal intensity.)
+
+ResultsTable %>%
+    mutate(map = c(1:nrow(.))) %>%
+    tibble() %>%
+    dplyr::filter(FileNames == files) %>%
+    select(map, all_of(colsToUse)) %>%
+    mutate(root_unassigned = if_else(map %in% phenotyped_table$map, 0L, 1L)) %>%
+    left_join(phenotyped_table, by = "map") %>%
+    select(-map) %>%
+    mutate(across(all_of(colnames(phenotyped_table)[-1]),
+      ~if_else(is.na(.x), 0, .x))) %>%
+    pivot_longer(ends_with("Di"),
+        names_to = "name",
+        values_to = "MSI"
+        ) %>%
+    pivot_longer(-c(name, MSI),
+        names_to = "CellSubset",
+        values_to = "subset_status") %>%
+    filter(subset_status == 1) %>%
+    group_by(name, CellSubset) %>%
+    summarise(MSI = median(MSI)) %>%
+    ungroup() %>%
+    left_join(targets %>%
+        select(name, descOriginal) %>%
+        setNames(c("name", "Channel")),
+        by = "name") %>%
+    select(-name) %>%
+    mutate(CellSubset = str_remove(CellSubset, "\\_1$")) %>%
+    pivot_wider(names_from = CellSubset,
+        values_from = "MSI") %>%
     write_csv(paste0(RESULTS_DIR,
                      "CLUSTERED_FCS/clustered_",
                      str_replace(basename(files),
                                  "\\.fcs$",
-                                 "-population-table.csv")))
+                                 "-assignment.csv")))
+
+# cell_counts_assignment.csv (Rows are cell subsets, column is cell counts)
+
+clusterData %>%
+    select(-c(Mapping:cyttools_dim_y)) %>%
+    colSums() %>%
+    as.data.frame() %>%
+    setNames("count") %>%
+    rownames_to_column("CellSubset") %>%
+    transmute(CellSubset = str_remove(CellSubset, "\\_1$"),
+      N = count) %>%
+    write_csv(paste0(RESULTS_DIR,
+                     "CLUSTERED_FCS/clustered_",
+                     str_replace(basename(files),
+                                 "\\.fcs$",
+                                 "-cell_counts_assignments.csv")))
+# cell_counts_compartment.csv (Rows are cell compartments, column is cell counts)
+
+ResultsTable %>%
+    mutate(map = c(1:nrow(.))) %>%
+    tibble() %>%
+    dplyr::filter(FileNames == files) %>%
+    select(map, all_of(colsToUse)) %>%
+    mutate(root_unassigned = if_else(map %in% compartment_table$map, 0L, 1L)) %>%
+    left_join(compartment_table, by = "map") %>%
+    select(-map) %>%
+    mutate(across(all_of(colnames(compartment_table)[-1]),
+      ~if_else(is.na(.x), 0, .x))) %>%
+    select(all_of(colnames(compartment_table)[-1])) %>%
+    colSums() %>%
+    as.data.frame() %>%
+    setNames("count") %>%
+    rownames_to_column("CellSubset") %>%
+    transmute(CellSubset = str_remove(CellSubset, "\\_1$"),
+      N = count) %>%
+    write_csv(paste0(RESULTS_DIR,
+                     "CLUSTERED_FCS/clustered_",
+                     str_replace(basename(files),
+                                 "\\.fcs$",
+                                 "-cell_counts_compartment.csv")))
+
+# compartment.csv (Rows are channels, columns are compartment descriptions, values are median signal intensity.)
+
+ResultsTable %>%
+    mutate(map = c(1:nrow(.))) %>%
+    tibble() %>%
+    dplyr::filter(FileNames == files) %>%
+    select(map, all_of(colsToUse)) %>%
+    mutate(root_unassigned = if_else(map %in% compartment_table$map, 0L, 1L)) %>%
+    left_join(compartment_table, by = "map") %>%
+    select(-map) %>%
+    mutate(across(all_of(colnames(compartment_table)[-1]),
+      ~if_else(is.na(.x), 0, .x))) %>%
+    pivot_longer(ends_with("Di"),
+        names_to = "name",
+        values_to = "MSI"
+        ) %>%
+    pivot_longer(-c(name, MSI),
+        names_to = "CellSubset",
+        values_to = "subset_status") %>%
+    filter(subset_status == 1) %>%
+    group_by(name, CellSubset) %>%
+    summarise(MSI = median(MSI)) %>%
+    ungroup() %>%
+    left_join(targets %>%
+        select(name, descOriginal) %>%
+        setNames(c("name", "Channel")),
+        by = "name") %>%
+    select(-name) %>%
+    mutate(CellSubset = str_remove(CellSubset, "\\_1$")) %>%
+    pivot_wider(names_from = CellSubset,
+        values_from = "MSI") %>%
+    write_csv(paste0(RESULTS_DIR,
+                     "CLUSTERED_FCS/clustered_",
+                     str_replace(basename(files),
+                                 "\\.fcs$",
+                                 "-compartment.csv")))
+# profiling.csv (Rows are channels, columns are profiled cell subsets, values are median signal intensity)
+
+ResultsTable %>%
+    mutate(map = c(1:nrow(.))) %>%
+    tibble() %>%
+    dplyr::filter(FileNames == files) %>%
+    select(map, all_of(colsToUse)) %>%
+    mutate(root_unassigned = if_else(map %in% profiled_table$map, 0L, 1L)) %>%
+    left_join(profiled_table, by = "map") %>%
+    select(-map) %>%
+    mutate(across(all_of(colnames(profiled_table)[-1]),
+      ~if_else(is.na(.x), 0, .x))) %>%
+    pivot_longer(ends_with("Di"),
+        names_to = "name",
+        values_to = "MSI"
+        ) %>%
+    pivot_longer(-c(name, MSI),
+        names_to = "CellSubset",
+        values_to = "subset_status") %>%
+    filter(subset_status == 1) %>%
+    group_by(name, CellSubset) %>%
+    summarise(MSI = median(MSI)) %>%
+    ungroup() %>%
+    left_join(targets %>%
+        select(name, descOriginal) %>%
+        setNames(c("name", "Channel")),
+        by = "name") %>%
+    select(-name) %>%
+    mutate(CellSubset = str_remove(CellSubset, "\\_1$")) %>%
+    pivot_wider(names_from = CellSubset,
+        values_from = "MSI") %>%
+    write_csv(paste0(RESULTS_DIR,
+                     "CLUSTERED_FCS/clustered_",
+                     str_replace(basename(files),
+                                 "\\.fcs$",
+                                 "-profiling.csv")))
+# cell_counts_profiling.csv (Rows are cell population profiles, column is cell counts)
+ResultsTable %>%
+    mutate(map = c(1:nrow(.))) %>%
+    tibble() %>%
+    dplyr::filter(FileNames == files) %>%
+    select(map, all_of(colsToUse)) %>%
+    mutate(root_unassigned = if_else(map %in% profiled_table$map, 0L, 1L)) %>%
+    left_join(profiled_table, by = "map") %>%
+    select(-map) %>%
+    mutate(across(all_of(colnames(profiled_table)[-1]),
+      ~if_else(is.na(.x), 0, .x))) %>%
+    select(all_of(colnames(profiled_table)[-1])) %>%
+    colSums() %>%
+    as.data.frame() %>%
+    setNames("count") %>%
+    rownames_to_column("CellSubset") %>%
+    transmute(CellSubset = str_remove(CellSubset, "\\_1$"),
+      N = count) %>%
+    write_csv(paste0(RESULTS_DIR,
+                     "CLUSTERED_FCS/clustered_",
+                     str_replace(basename(files),
+                                 "\\.fcs$",
+                                 "-cell_counts_profiling.csv")))
+
+# Granulocytes should be the combination of eosinophils, neutrophils, and basophils (which we have definitions for)
+# Other is leftovers
 
   clusterFCS <- fr_append_cols(rawFCS, as.matrix(clusterData))
   row.names(pData(parameters(clusterFCS))) <- paste0("$P", c(1:nrow(pData(parameters(clusterFCS)))))
