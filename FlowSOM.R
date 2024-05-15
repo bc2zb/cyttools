@@ -288,7 +288,9 @@ compartment_table <- phenotyped_table %>%
 #### write out results ####
 dir.create(paste0(RESULTS_DIR, "CLUSTERED_FCS/"),
            showWarnings = F)
-for( files in file){
+# for (files in file)
+lapply(file, function(files){
+  cat("processing ", files, "\n")
   rawFCS <- read.FCS(files, transformation = F)
   clusterData <- ResultsTable %>%
     mutate(map = c(1:nrow(.))) %>%
@@ -300,9 +302,9 @@ for( files in file){
     mutate(across(all_of(colnames(phenotyped_table)[-1]),
       ~if_else(is.na(.x), 0, .x)))
   
-# assignment.csv (Rows are channels, columns are population descriptions, values are median signal intensity.)
+  # assignment.csv (Rows are channels, columns are population descriptions, values are median signal intensity.)
 
-ResultsTable %>%
+  ResultsTable %>%
     mutate(map = c(1:nrow(.))) %>%
     tibble() %>%
     dplyr::filter(FileNames == files) %>%
@@ -336,10 +338,10 @@ ResultsTable %>%
                      str_replace(basename(files),
                                  "\\.fcs$",
                                  "-assignment.csv")))
-
+  cat("assignment.csv written successfully \n")
 # cell_counts_assignment.csv (Rows are cell subsets, column is cell counts)
 
-clusterData %>%
+  clusterData %>%
     select(-c(Mapping:cyttools_dim_y)) %>%
     colSums() %>%
     as.data.frame() %>%
@@ -352,9 +354,10 @@ clusterData %>%
                      str_replace(basename(files),
                                  "\\.fcs$",
                                  "-cell_counts_assignments.csv")))
+  cat("cell_counts_assignment.csv written successfully \n")
 # cell_counts_compartment.csv (Rows are cell compartments, column is cell counts)
 
-ResultsTable %>%
+  ResultsTable %>%
     mutate(map = c(1:nrow(.))) %>%
     tibble() %>%
     dplyr::filter(FileNames == files) %>%
@@ -364,7 +367,7 @@ ResultsTable %>%
     select(-map) %>%
     mutate(across(all_of(colnames(compartment_table)[-1]),
       ~if_else(is.na(.x), 0, .x))) %>%
-    select(all_of(colnames(compartment_table)[-1])) %>%
+    select(c(root_unassigned, all_of(colnames(compartment_table)[-1]))) %>%
     colSums() %>%
     as.data.frame() %>%
     setNames("count") %>%
@@ -376,10 +379,10 @@ ResultsTable %>%
                      str_replace(basename(files),
                                  "\\.fcs$",
                                  "-cell_counts_compartment.csv")))
-
+  cat("cell_counts_compartment.csv written successfully \n")
 # compartment.csv (Rows are channels, columns are compartment descriptions, values are median signal intensity.)
 
-ResultsTable %>%
+  ResultsTable %>%
     mutate(map = c(1:nrow(.))) %>%
     tibble() %>%
     dplyr::filter(FileNames == files) %>%
@@ -413,9 +416,10 @@ ResultsTable %>%
                      str_replace(basename(files),
                                  "\\.fcs$",
                                  "-compartment.csv")))
+  cat("compartment.csv written successfully \n")
 # profiling.csv (Rows are channels, columns are profiled cell subsets, values are median signal intensity)
 
-ResultsTable %>%
+  ResultsTable %>%
     mutate(map = c(1:nrow(.))) %>%
     tibble() %>%
     dplyr::filter(FileNames == files) %>%
@@ -449,8 +453,9 @@ ResultsTable %>%
                      str_replace(basename(files),
                                  "\\.fcs$",
                                  "-profiling.csv")))
+  cat("profiling.csv written successfully \n")
 # cell_counts_profiling.csv (Rows are cell population profiles, column is cell counts)
-ResultsTable %>%
+  ResultsTable %>%
     mutate(map = c(1:nrow(.))) %>%
     tibble() %>%
     dplyr::filter(FileNames == files) %>%
@@ -472,7 +477,7 @@ ResultsTable %>%
                      str_replace(basename(files),
                                  "\\.fcs$",
                                  "-cell_counts_profiling.csv")))
-
+  cat("cell_counts_profiling.csv written successfully \n")
 # Granulocytes should be the combination of eosinophils, neutrophils, and basophils (which we have definitions for)
 # Other is leftovers
 
@@ -480,7 +485,7 @@ ResultsTable %>%
   row.names(pData(parameters(clusterFCS))) <- paste0("$P", c(1:nrow(pData(parameters(clusterFCS)))))
   out.fcs.file <- paste0(RESULTS_DIR, "CLUSTERED_FCS/clustered_", basename(files))
   write.FCS(clusterFCS, out.fcs.file)
-}
+})
 
 # # write out results
 # ResultsTableFile <- paste(RESULTS_DIR, "FlowSOMResultsTable.txt", sep = "")
