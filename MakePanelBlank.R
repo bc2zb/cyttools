@@ -48,9 +48,9 @@ panel <- panelBlank
 panel$desc <- gsub("eq_beads", "EQBEADS", panel$desc)
 
 panel$EQBEADS[grep("EQBEADS", panel$desc)] <- 1
-panel$Barcode[grep("Pd", panel$desc)] <- 1
+panel$Barcode[grep("Pd|barcode", panel$desc)] <- 1
 panel$EventDiscrimination[grep("Ir", panel$desc)] <- 1
-panel$Viability[grep("Pt", panel$desc)] <- 1
+panel$Viability[grep("Pt|Viability", panel$desc)] <- 1
 
 panel$descOriginal <- panel$desc
 
@@ -67,6 +67,7 @@ panel$Ignore[grep("EQBEADS|dist", panel$desc)] <- 1
 panel$Ignore[is.na(panel$desc)] <- 1
 panel$Ignore[which(panel$Viability == 1)] <- 1
 panel$Ignore[which(panel$EventDiscrimination == 1)] <- 1
+panel$Ignore[which(panel$desc == "Osmium")] <- 1
 
 functionalMarkerIndex <- grep("^p|casp", panel$desc)
 panel$Functional[functionalMarkerIndex] <- 1
