@@ -86,14 +86,13 @@ if(args$transform == "logicle"){
 }
 
 fsom <- ReadInput(flowSet.trans, transform = FALSE, scale = FALSE)
-set.seed(1234)
 
 colsToUse <- which(targets$name %in% lineage_markers[lineage_markers %in% targets$name[targets$Ignore == 0]] == T)
 
 som <- BuildSOM(fsom,
                 colsToUse = targets$name[colsToUse],
-                xdim = length(colsToUse),
-                ydim = length(colsToUse))
+                xdim = 23,
+                ydim = 23)
 
 flowSOM.res <- BuildMST(som)
 
@@ -298,6 +297,11 @@ lapply(file, function(files){
     select(map, Mapping, DistToNode, cyttools_dim_x, cyttools_dim_y) %>%
     mutate(root_unassigned = if_else(map %in% phenotyped_table$map, 0L, 1L)) %>%
     left_join(phenotyped_table, by = "map") %>%
+    left_join(phenotype_matrix |>
+      as.data.frame() |>
+      setNames(paste(colnames(phenotype_matrix), "gate", sep = ".")) |>
+      mutate(map = c(1:nrow(.))),
+      by = "map") |>
     select(-map) %>%
     mutate(across(all_of(colnames(phenotyped_table)[-1]),
       ~if_else(is.na(.x), 0, .x)))
@@ -343,6 +347,7 @@ lapply(file, function(files){
 
   clusterData %>%
     select(-c(Mapping:cyttools_dim_y)) %>%
+    select(-ends_with(".gate")) |>
     colSums() %>%
     as.data.frame() %>%
     setNames("count") %>%
@@ -362,12 +367,14 @@ lapply(file, function(files){
     tibble() %>%
     dplyr::filter(FileNames == files) %>%
     select(map, all_of(colsToUse)) %>%
-    mutate(root_unassigned = if_else(map %in% compartment_table$map, 0L, 1L)) %>%
+    #mutate(root_unassigned = if_else(map %in% compartment_table$map, 0L, 1L)) %>%
     left_join(compartment_table, by = "map") %>%
     select(-map) %>%
     mutate(across(all_of(colnames(compartment_table)[-1]),
-      ~if_else(is.na(.x), 0, .x))) %>%
+      ~if_else(is.na(.x), 0, .x)),
+      root_unassigned = rowSums(across(all_of(colnames(compartment_table)[-1])))) %>%
     select(c(root_unassigned, all_of(colnames(compartment_table)[-1]))) %>%
+    mutate(root_unassigned = if_else(root_unassigned == 0, 1, 0)) |>
     colSums() %>%
     as.data.frame() %>%
     setNames("count") %>%
